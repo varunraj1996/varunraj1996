@@ -1,0 +1,1389 @@
+<title>Waypoint Award Search</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Atkinson+Hyperlegible:wght@400;700&family=B612:wght@400;700&family=B612+Mono:wght@400;700&display=swap">
+<style>
+:root{
+  /* Layout: sticky ink bar; search band on chart-paper graticule; results column with a filter rail at >=960px (bottom sheet below) */
+  --paper:#EDF1EF;
+  --surface:#F9FBFA;
+  --raise:#FFFFFF;
+  --ink:#12263A;
+  --muted:#556776;
+  --rule:#D2DADC;
+  --rule-strong:#A9B7BD;
+  --grid:rgba(27,87,161,.07);
+  --magenta:#A1166E;
+  --magenta-soft:#F5E2EC;
+  --on-accent:#FFFFFF;
+  --blue:#1B57A1;
+  --blue-soft:#E4EDF8;
+  --teal:#0D6E73;
+  --terrain:#E5ECE1;
+  --good:#1C7146;
+  --good-soft:#DCEFE3;
+  --warn:#955600;
+  --warn-soft:#F9E9CF;
+  --bar:#12263A;
+  --bar-fg:#EEF3F1;
+  --bar-muted:#A9BAC6;
+  --bar-hi:rgba(255,255,255,.11);
+  --bar-star:#F27BC0;
+  --shadow:0 1px 2px rgba(18,38,58,.06),0 6px 18px rgba(18,38,58,.08);
+  --scrim:rgba(10,20,30,.45);
+  --f-display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-data:"B612","Atkinson Hyperlegible",system-ui,sans-serif;
+  --f-code:"B612 Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0C151E;--surface:#111D28;--raise:#162432;--ink:#E3EBF0;--muted:#93A5B3;--rule:#22323F;--rule-strong:#3A4E5E;
+    --grid:rgba(136,183,241,.06);--magenta:#EE72B7;--magenta-soft:#3A1630;--on-accent:#1C0915;--blue:#88B7F1;--blue-soft:#15283F;
+    --teal:#5CC6C9;--terrain:#13252E;--good:#62D09A;--good-soft:#10301F;--warn:#F1B460;--warn-soft:#38270F;
+    --bar:#08111A;--bar-fg:#E3EBF0;--bar-muted:#8A9CAA;--bar-hi:rgba(255,255,255,.08);--bar-star:#EE72B7;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3);--scrim:rgba(0,0,0,.6);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0C151E;--surface:#111D28;--raise:#162432;--ink:#E3EBF0;--muted:#93A5B3;--rule:#22323F;--rule-strong:#3A4E5E;
+  --grid:rgba(136,183,241,.06);--magenta:#EE72B7;--magenta-soft:#3A1630;--on-accent:#1C0915;--blue:#88B7F1;--blue-soft:#15283F;
+  --teal:#5CC6C9;--terrain:#13252E;--good:#62D09A;--good-soft:#10301F;--warn:#F1B460;--warn-soft:#38270F;
+  --bar:#08111A;--bar-fg:#E3EBF0;--bar-muted:#8A9CAA;--bar-hi:rgba(255,255,255,.08);--bar-star:#EE72B7;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3);--scrim:rgba(0,0,0,.6);color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bar)}
+h1,h2,h3,h4{text-wrap:balance}
+a{color:var(--blue)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.lbl{font:700 11px/1.2 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bar);color:var(--bar-fg)}
+.bar .wrap{display:flex;align-items:center;gap:10px;min-height:56px}
+.brand{display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none;font-family:var(--f-display);font-weight:800;font-stretch:125%;letter-spacing:.08em;text-transform:uppercase;font-size:15px}
+.brand svg{width:24px;height:24px;flex:none}
+.tabs{display:flex;gap:2px;margin-left:auto}
+.tab{color:var(--bar-muted);text-decoration:none;font-weight:700;font-size:14px;padding:8px 10px;border-radius:6px}
+.tab[aria-current="page"]{color:var(--bar-fg);background:var(--bar-hi)}
+.wallet-btn{display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.22);background:transparent;color:var(--bar-fg);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.wallet-btn .wb-l{font-size:13px;color:var(--bar-muted)}
+.wallet-btn .wb-v{font:700 13px var(--f-data)}
+@media (max-width:420px){.wallet-btn .wb-l{display:none}.tab{padding:8px 8px}}
+
+/* search band */
+.search{background-color:var(--surface);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:44px 44px;border-bottom:1px solid var(--rule)}
+.search .wrap{padding-block:18px 18px}
+.sform{display:grid;gap:12px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.field{display:grid;gap:5px;min-width:0;margin:0;padding:0;border:0}
+.field legend{padding:0;margin-bottom:5px}
+.input{height:48px;width:100%;border:1px solid var(--rule-strong);border-radius:6px;background:var(--raise);color:var(--ink);font-size:16px;padding:0 12px}
+.input:focus{outline:2px solid var(--blue);outline-offset:0;border-color:var(--blue)}
+select.input{padding-right:8px}
+.od{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"from swap" "to swap";gap:10px 10px;align-items:end}
+#acFrom{grid-area:from}#acTo{grid-area:to}
+.swap{grid-area:swap;align-self:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--rule-strong);background:var(--raise);color:var(--ink);display:grid;place-items:center;cursor:pointer;margin-top:18px}
+.swap svg{width:20px;height:20px}
+.ac{position:relative}
+.ac .input{font-weight:700}
+.lb{position:absolute;z-index:25;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;background:var(--raise);border:1px solid var(--rule-strong);border-radius:8px;box-shadow:var(--shadow);max-height:320px;overflow:auto}
+.lb li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;align-items:baseline;padding:9px 10px;border-radius:6px;cursor:pointer}
+.lb li b{font:700 14px var(--f-code);color:var(--magenta)}
+.lb li span{font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb li span small{color:var(--muted)}
+.lb li[aria-selected="true"]{background:var(--blue-soft)}
+.cabins{grid-column:1/-1}
+.seg{display:flex;border:1px solid var(--rule-strong);border-radius:6px;overflow:hidden;background:var(--raise)}
+.seg label{flex:1;position:relative;min-width:0}
+.seg input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.seg span{display:block;text-align:center;padding:12px 4px;font-weight:700;font-size:14px;border-left:1px solid var(--rule);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg label:first-child span{border-left:0}
+.seg input:checked+span{background:var(--ink);color:var(--paper)}
+.seg input:focus-visible+span{outline:2px solid var(--blue);outline-offset:-3px}
+.go{grid-column:1/-1;height:48px;border:0;border-radius:6px;background:var(--magenta);color:var(--on-accent);font-weight:700;font-size:16px;cursor:pointer;padding:0 22px;align-self:end}
+.go:hover{filter:brightness(1.06)}
+.ferr{margin:10px 0 0;color:var(--warn);font-weight:700}
+@media (min-width:960px){
+  .sform{grid-template-columns:minmax(0,2.5fr) minmax(0,1fr) minmax(0,.7fr)}
+  .od{grid-column:auto;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-areas:"from swap to"}
+  .swap{margin-top:0;align-self:end;margin-bottom:2px}
+  .swap svg{transform:rotate(90deg)}
+  .cabins{grid-column:1/3}
+  .go{grid-column:3}
+}
+
+/* main layout */
+.main .wrap{display:grid;gap:24px;padding-block:6px 48px}
+@media (min-width:960px){.main .wrap{grid-template-columns:240px minmax(0,1fr);align-items:start}}
+.results{min-width:0}
+
+/* route banner */
+.route{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding-block:22px 2px}
+.rp{display:grid;gap:3px}
+.rp-r{text-align:right}
+.rc{font-family:var(--f-display);font-weight:800;font-stretch:125%;font-size:clamp(34px,8.5vw,56px);line-height:.92;letter-spacing:.01em}
+.rcity{font-size:13px;color:var(--muted)}
+.airway{position:relative;height:40px;display:grid;place-items:center;min-width:0}
+.aw-line{position:absolute;left:6px;right:6px;top:50%;height:2px;margin-top:-1px;background:var(--magenta)}
+.aw-line::before,.aw-line::after{content:"";position:absolute;top:50%;width:10px;height:10px;border:2px solid var(--magenta);border-radius:50%;background:var(--paper);transform:translate(-50%,-50%)}
+.aw-line::before{left:0}.aw-line::after{left:100%}
+.aw-d{position:relative;display:inline-flex;align-items:center;gap:6px;background:var(--paper);padding:0 8px;font:700 12px var(--f-data);color:var(--magenta);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.aw-d svg{width:14px;height:14px}
+.rmeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:10px 0 0;color:var(--muted);font-size:14px}
+.sim{font:700 11px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--magenta);background:var(--magenta-soft);padding:5px 8px;border-radius:4px;text-decoration:none}
+.linkish{background:none;border:0;padding:0;color:var(--blue);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* date strip */
+.dates{display:flex;gap:6px;overflow-x:auto;padding-block:16px 4px;scrollbar-width:thin}
+.day{flex:0 0 auto;min-width:88px;display:grid;gap:2px;text-align:left;border:1px solid var(--rule);background:var(--surface);border-radius:6px;padding:8px 10px;cursor:pointer;color:var(--ink)}
+.day .dw{font-size:12px;color:var(--muted);white-space:nowrap}
+.day .dp{font:700 14px var(--f-data);font-variant-numeric:tabular-nums}
+.day.low .dp{color:var(--magenta)}
+.day[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--raise)}
+
+/* summary */
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.sum{display:grid;gap:3px;text-align:left;border:1px solid var(--rule);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;color:var(--ink);min-width:0}
+.sum .v{font:700 18px/1.15 var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum .s{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum[aria-pressed="true"]{border-color:var(--magenta);box-shadow:inset 0 0 0 1px var(--magenta)}
+@media (max-width:380px){.sum{padding:9px}.sum .v{font-size:15px}}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding-block:18px 10px}
+.count{margin:0 auto 0 0;font-weight:700;font-size:14px}
+.count span{color:var(--muted);font-weight:400}
+.sortl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.sortl select{height:38px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--raise);padding:0 8px;font-size:14px;color:var(--ink)}
+.ftoggle{display:none;height:38px;align-items:center;gap:6px;border:1px solid var(--rule-strong);background:var(--raise);border-radius:6px;padding:0 12px;font-weight:700;font-size:14px;cursor:pointer}
+.ftoggle b{font:700 11px var(--f-data);background:var(--magenta);color:var(--on-accent);border-radius:999px;padding:2px 6px}
+@media (max-width:959px){.ftoggle{display:inline-flex}}
+
+/* result list */
+.list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.itin{background:var(--surface);border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.itin.open{border-color:var(--rule-strong);box-shadow:var(--shadow);background:var(--raise)}
+.ihead{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"sched best" "meta2 best" "tags tags";gap:8px 22px;width:100%;padding:14px 16px;text-align:left;background:none;border:0;cursor:pointer;color:inherit}
+.ihead:hover .tm{color:var(--magenta)}
+.ihead:focus-visible{outline-offset:-3px}
+.sched{grid-area:sched;display:grid;grid-template-columns:auto minmax(48px,1fr) auto;align-items:center;gap:12px}
+.end{display:grid;gap:1px}
+.end-r{text-align:right}
+.tm{font:700 18px/1.1 var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tm sup{font-size:10px;color:var(--magenta);margin-left:2px}
+.cd{font:400 12px var(--f-code);color:var(--muted)}
+.path{display:grid;gap:5px;text-align:center;min-width:0}
+.ln{position:relative;height:2px;background:var(--rule-strong);margin:0 4px}
+.ln::before,.ln::after{content:"";position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.ln::before{left:-4px}.ln::after{right:-4px}
+.dot{position:absolute;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--magenta);transform:translateX(-50%)}
+.du,.st{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st.ns{color:var(--good);font-weight:700}
+.best{grid-area:best;display:grid;justify-items:end;align-content:start;gap:3px;text-align:right}
+.bp{font:700 21px/1.1 var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bp small{font:700 12px var(--f-body);color:var(--muted)}
+.bf{font:400 13px var(--f-data);color:var(--muted);white-space:nowrap}
+.bv{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:700;white-space:nowrap}
+.meta2{grid-area:meta2;font-size:13px;color:var(--muted);min-width:0;align-self:center}
+.tags{grid-area:tags;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.more{margin-left:auto;font-size:13px;font-weight:700;color:var(--blue);display:inline-flex;align-items:center;gap:6px}
+.more::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.itin.open .more::after{transform:translateY(2px) rotate(-135deg)}
+@media (max-width:620px){
+  .ihead{grid-template-areas:"sched sched" "meta2 best" "tags tags";gap:10px 14px}
+}
+
+/* chips + badges */
+.chip{display:inline-flex;align-items:center;gap:4px;font:700 12px/1 var(--f-body);padding:5px 8px;border-radius:999px;border:1px solid var(--rule-strong);color:var(--muted);white-space:nowrap}
+.chip.good{color:var(--good);background:var(--good-soft);border-color:transparent}
+.chip.warn{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.chip.lv-saver{color:var(--blue);border-color:var(--blue)}
+.chip.lv-promo,.chip.lv-flash{color:var(--magenta);border-color:var(--magenta)}
+.chip.fund{font-family:var(--f-data);font-weight:400;font-size:11px}
+.chip.fund.has{color:var(--ink);border-color:var(--ink);font-weight:700}
+.pb{display:inline-grid;place-items:center;min-width:30px;height:22px;padding:0 5px;border-radius:4px;font:700 11px/1 var(--f-code);letter-spacing:.03em;color:var(--surface);background:var(--muted);flex:none}
+.pb-star{background:var(--ink)}.pb-oneworld{background:var(--blue)}.pb-skyteam{background:var(--teal)}
+
+/* expanded body */
+.ibody{border-top:1px solid var(--rule)}
+.segs{padding:12px 16px;display:grid;gap:8px;background:var(--surface)}
+.sg{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) minmax(0,1.2fr);gap:4px 14px;font-size:13px}
+.sg-f{font-weight:700}
+.sg-t{font-family:var(--f-data);font-size:12.5px}
+.sg-m{color:var(--muted)}
+.lay{font-size:12px;color:var(--magenta);font-weight:700;padding-left:12px;border-left:2px dotted var(--magenta)}
+@media (max-width:620px){.sg{grid-template-columns:minmax(0,1fr)}}
+.opts-h{display:flex;justify-content:space-between;gap:12px;padding:12px 16px 4px}
+.opt{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;grid-template-areas:"pb on nums go" ". fund fund fund";gap:8px 16px;align-items:center;padding:12px 16px;border-top:1px solid var(--rule)}
+.opts-h+.opt{border-top:0}
+.opt.sel{background:var(--blue-soft)}
+.opt .pb{grid-area:pb}
+.on{grid-area:on;display:grid;min-width:0}
+.on b{font-size:14px}
+.on small{font-size:12px;color:var(--muted)}
+.nums{grid-area:nums;display:flex;gap:18px}
+.n{display:grid;text-align:right}
+.n b{font:700 15px var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.n small{font-size:11px;color:var(--muted)}
+.ofund{grid-area:fund;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.og{grid-area:go;height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--ink);background:transparent;color:var(--ink);font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.opt.sel .og{background:var(--ink);color:var(--paper)}
+@media (max-width:620px){
+  .opt{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"pb on" "nums nums" "fund fund" "go go"}
+  .nums{justify-content:space-between}
+  .n{text-align:left}
+}
+
+/* booking plan */
+.plan{padding:16px 16px 18px;border-top:1px solid var(--rule);background:var(--terrain);display:grid;gap:14px}
+.steps{list-style:none;counter-reset:st;margin:0;padding:0;display:grid;gap:14px}
+.steps>li{counter-increment:st;display:grid;grid-template-columns:28px minmax(0,1fr);gap:3px 12px}
+.steps>li::before{content:counter(st);grid-row:span 2;width:26px;height:26px;border-radius:50%;border:2px solid var(--magenta);color:var(--magenta);display:grid;place-items:center;font:700 12px var(--f-data);background:var(--raise)}
+.steps>li>*{grid-column:2}
+.steps h4{margin:3px 0 0;font-size:14px}
+.steps p{margin:0;font-size:14px;max-width:65ch}
+.xfers{margin:2px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.xfers li{font-size:14px}
+.xfers .r{font:400 12px var(--f-data);color:var(--muted);margin-left:4px}
+.pnote{margin:0;font-size:13px;color:var(--muted);max-width:70ch}
+.caution{margin:0;font-size:13px;font-weight:700;color:var(--warn)}
+.ext{justify-self:start;font-weight:700;color:var(--magenta);text-decoration:none;border-bottom:2px solid currentColor;padding-bottom:1px}
+.ext::after{content:" \2197"}
+
+/* empty */
+.empty{padding:28px 18px;border:1px dashed var(--rule-strong);border-radius:8px;text-align:center;color:var(--muted);display:grid;gap:10px;justify-items:center}
+.empty b{color:var(--ink);font-size:16px}
+.empty button{border:1px solid var(--ink);background:none;border-radius:6px;padding:8px 14px;font-weight:700;cursor:pointer;color:var(--ink)}
+
+/* filters */
+.filters{display:grid;gap:20px;padding-block:22px 10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);max-height:calc(100vh - 80px);overflow:auto}
+.fhead{display:flex;align-items:center;justify-content:space-between}
+.fhead h2{margin:0;font-family:var(--f-display);font-stretch:112%;font-size:17px;font-weight:800}
+.freset{background:none;border:0;color:var(--blue);font-weight:700;cursor:pointer;font-size:13px;padding:4px}
+.fs{display:grid;gap:8px;border-top:1px solid var(--rule);padding-top:14px}
+.fs h3{margin:0}
+.radio{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.radio input{width:18px;height:18px;accent-color:var(--magenta);margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.fchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule-strong);background:var(--raise);border-radius:999px;padding:5px 9px 5px 5px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink)}
+.fchip[aria-pressed="false"]{opacity:.5;text-decoration:line-through;background:transparent}
+.fchip .pb{height:18px;min-width:26px;font-size:10px}
+.fchip.al{padding-left:9px}
+.fsel{height:40px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--raise);padding:0 8px;color:var(--ink)}
+.fdone{display:none}
+.fbackdrop{position:fixed;inset:0;background:var(--scrim);z-index:44}
+@media (max-width:959px){
+  .filters{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:45;max-height:84vh;overflow:auto;background:var(--raise);border-radius:14px 14px 0 0;box-shadow:var(--shadow);
+    padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+    transform:translateY(105%);visibility:hidden;transition:transform .22s ease,visibility .22s}
+  .filters.open{transform:none;visibility:visible}
+  .fdone{display:block;height:46px;border:0;border-radius:6px;background:var(--magenta);color:var(--on-accent);font-weight:700;font-size:15px;cursor:pointer}
+}
+
+/* partners view */
+.phead .wrap{padding-block:28px 8px}
+.phead h1{margin:0 0 8px;font-family:var(--f-display);font-stretch:125%;font-weight:800;font-size:clamp(26px,5vw,38px);line-height:1.05}
+.phead p{margin:0;color:var(--muted);max-width:66ch}
+.pbody .wrap{padding-block:16px 48px;display:grid;gap:12px}
+.ptw{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--surface)}
+table.pt{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+.pt th,.pt td{padding:10px 12px;border-bottom:1px solid var(--rule);text-align:center;white-space:nowrap}
+.pt thead th{font:700 11px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface)}
+.pt th[scope="row"]{text-align:left;font-weight:700;position:sticky;left:0;background:var(--surface);z-index:1}
+.pt th[scope="row"] .pb{margin-right:8px}
+.pt thead th:first-child{text-align:left;position:sticky;left:0;z-index:2}
+.pt tr.grp th{text-align:left;font-family:var(--f-display);font-stretch:112%;font-weight:800;font-size:13px;background:var(--terrain);color:var(--ink);position:static}
+.pt td.r{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+.pt td.r small{display:block;font:400 10.5px var(--f-body);color:var(--muted)}
+.pt td.none{color:var(--rule-strong)}
+.pt td.reach{font:700 14px var(--f-data);text-align:right}
+.pt thead th:last-child{text-align:right}
+.small{font-size:13px;color:var(--muted);margin:0;max-width:72ch}
+
+/* wallet sheet */
+.sheet{position:fixed;inset:0;z-index:60}
+.sheet .backdrop{position:absolute;inset:0;background:var(--scrim)}
+.panel{position:absolute;right:0;top:0;bottom:0;width:min(440px,100%);background:var(--raise);overflow:auto;display:grid;gap:14px;align-content:start;box-shadow:var(--shadow);
+  padding:calc(18px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 20px}
+@media (max-width:600px){
+  .panel{top:auto;width:100%;max-height:90vh;border-radius:14px 14px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+}
+.phd{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.phd h2{margin:0;font-family:var(--f-display);font-stretch:118%;font-weight:800;font-size:22px}
+.x{width:40px;height:40px;border-radius:50%;border:1px solid var(--rule-strong);background:none;font-size:20px;line-height:1;cursor:pointer;color:var(--ink)}
+.wnote{margin:0;font-size:13px;padding:10px 12px;border-radius:6px;background:var(--warn-soft);color:var(--warn);font-weight:700}
+.wrows{display:grid;gap:8px}
+.wrow{display:grid;grid-template-columns:minmax(0,1fr) 136px;gap:12px;align-items:center;font-size:14px}
+.wrow .input{height:42px;text-align:right;font:700 15px var(--f-data)}
+.wmiles summary{cursor:pointer;font-weight:700;padding:8px 0;color:var(--blue)}
+.wmiles .wrows{padding-top:6px}
+.wfoot{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--rule);padding-top:14px;font-size:14px}
+.wfoot b{font-family:var(--f-data)}
+.wfoot button{background:none;border:0;color:var(--blue);font-weight:700;cursor:pointer;padding:4px}
+
+/* footer */
+.foot{border-top:1px solid var(--rule);background:var(--surface)}
+.foot .wrap{padding-block:24px 36px;display:grid;gap:8px}
+.foot h2{margin:0 0 4px;font-family:var(--f-display);font-stretch:112%;font-size:16px;font-weight:800}
+.foot p{margin:0;font-size:13px;color:var(--muted);max-width:75ch}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="#search" aria-label="Waypoint, award search home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M12 3.2 13.8 10.2 20.8 12 13.8 13.8 12 20.8 10.2 13.8 3.2 12 10.2 10.2Z" fill="var(--bar-star)"/></svg>
+      <span>Waypoint</span>
+    </a>
+    <nav class="tabs" aria-label="Sections">
+      <a class="tab" href="#search" data-view="search">Search</a>
+      <a class="tab" href="#partners" data-view="partners">Partners</a>
+    </nav>
+    <button class="wallet-btn" id="walletBtn" type="button" aria-haspopup="dialog"><span class="wb-l">My points</span><span class="wb-v" id="walletTotal">0</span></button>
+  </div>
+</header>
+
+<div id="view-search">
+  <section class="search" aria-label="Find award flights">
+    <div class="wrap">
+      <h1 class="vh">Award flight search</h1>
+      <form id="sform" class="sform" autocomplete="off" novalidate>
+        <div class="od">
+          <div class="field ac" id="acFrom">
+            <label class="lbl" for="from">From</label>
+            <input id="from" class="input" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="from-list" spellcheck="false" autocapitalize="characters">
+            <ul class="lb" id="from-list" role="listbox" aria-label="Origin airports" hidden></ul>
+          </div>
+          <button type="button" class="swap" id="swap" aria-label="Swap origin and destination"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v14M7 4 3.5 7.5M7 4l3.5 3.5M17 20V6m0 14-3.5-3.5M17 20l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="field ac" id="acTo">
+            <label class="lbl" for="to">To</label>
+            <input id="to" class="input" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="to-list" spellcheck="false" autocapitalize="characters">
+            <ul class="lb" id="to-list" role="listbox" aria-label="Destination airports" hidden></ul>
+          </div>
+        </div>
+        <div class="field"><label class="lbl" for="date">Depart</label><input id="date" class="input" type="date"></div>
+        <div class="field"><label class="lbl" for="pax">Travelers</label>
+          <select id="pax" class="input"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+        </div>
+        <fieldset class="field cabins">
+          <legend class="lbl">Cabin</legend>
+          <div class="seg" id="cabins">
+            <label><input type="radio" name="cab" id="cab0" value="0"><span>Economy</span></label>
+            <label><input type="radio" name="cab" id="cab1" value="1"><span>Premium</span></label>
+            <label><input type="radio" name="cab" id="cab2" value="2"><span>Business</span></label>
+            <label><input type="radio" name="cab" id="cab3" value="3"><span>First</span></label>
+          </div>
+        </fieldset>
+        <button class="go" type="submit">Search awards</button>
+      </form>
+      <p class="ferr" id="ferr" role="alert" hidden></p>
+    </div>
+  </section>
+
+  <section class="main" aria-label="Results">
+    <div class="wrap">
+      <aside class="filters" id="filters" aria-label="Filters">
+        <div class="fhead"><h2>Filters</h2><button class="freset" id="freset" type="button">Reset</button></div>
+        <section class="fs">
+          <h3 class="lbl">Stops</h3>
+          <label class="radio"><input type="radio" name="stops" id="st9" value="9" checked> Any number</label>
+          <label class="radio"><input type="radio" name="stops" id="st1" value="1"> Up to 1 stop</label>
+          <label class="radio"><input type="radio" name="stops" id="st0" value="0"> Nonstop only</label>
+        </section>
+        <section class="fs">
+          <h3 class="lbl">My points</h3>
+          <label class="radio"><input type="checkbox" id="fmine"> Only what I can book now</label>
+        </section>
+        <section class="fs">
+          <h3 class="lbl">Cash fees</h3>
+          <label class="vh" for="ffee">Maximum cash fees</label>
+          <select class="fsel" id="ffee"><option value="Infinity">Any amount</option><option value="100">Under $100</option><option value="250">Under $250</option><option value="600">Under $600</option></select>
+        </section>
+        <section class="fs">
+          <h3 class="lbl">Booking programs</h3>
+          <div class="chips" id="fProgs"></div>
+        </section>
+        <section class="fs">
+          <h3 class="lbl">Operating airlines</h3>
+          <div class="chips" id="fAls"></div>
+        </section>
+        <button class="fdone" id="fdone" type="button">Show results</button>
+      </aside>
+      <div class="fbackdrop" id="fbackdrop" hidden></div>
+
+      <div class="results" id="results">
+        <div class="route" id="route"></div>
+        <p class="rmeta" id="rmeta"></p>
+        <div class="dates" id="dates" role="group" aria-label="Lowest points on nearby dates"></div>
+        <div class="summary" id="summary"></div>
+        <div class="toolbar">
+          <p class="count" id="count"></p>
+          <button class="ftoggle" id="ftoggle" type="button" aria-controls="filters" aria-expanded="false">Filters</button>
+          <label class="sortl" for="sort">Sort
+            <select id="sort">
+              <option value="points">Fewest points</option>
+              <option value="fees">Lowest fees</option>
+              <option value="value">Best value</option>
+              <option value="duration">Shortest trip</option>
+              <option value="depart">Earliest departure</option>
+            </select>
+          </label>
+        </div>
+        <ol class="list" id="list"></ol>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="view-partners" hidden>
+  <section class="phead"><div class="wrap">
+    <h1>Transfer partners</h1>
+    <p>Which card points move to which airline programs, and at what rate. The last column is the most miles you could have in each program using the balances in My points.</p>
+  </div></section>
+  <section class="pbody"><div class="wrap">
+    <div class="ptw"><table class="pt" id="ptable"></table></div>
+    <p class="small">A ratio of 1:0.8 means 1,000 card points become 800 airline miles. Banks move points in blocks of 1,000. Times are typical, not guaranteed. Partner lists change often, so check your card's site before you transfer.</p>
+  </div></section>
+</div>
+
+<footer class="foot" id="about"><div class="wrap">
+  <h2>About this demo</h2>
+  <p>Waypoint shows how an award search engine works from end to end. Flight schedules, award seats, cash fares and points prices are simulated. They follow the way each program prices awards (fixed charts, distance bands, demand pricing, surcharges) and stay the same for a given route and date, but they are not live airline data.</p>
+  <p>Transfer partners and ratios follow what the card programs have published. They change often, so confirm them on your card's site first. Point transfers can't be reversed.</p>
+  <p>Not affiliated with any airline, bank or award search service. Your balances stay in this browser.</p>
+</div></footer>
+
+<div class="sheet" id="wallet" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="wTitle">
+    <div class="phd"><h2 id="wTitle">My points</h2><button class="x" type="button" data-close aria-label="Close">&times;</button></div>
+    <p class="wnote" id="wNote">These are example balances. Replace them with yours; they're saved only in this browser.</p>
+    <h3 class="lbl">Card points</h3>
+    <div class="wrows" id="wBanks"></div>
+    <details class="wmiles"><summary>Airline miles you already have</summary><div class="wrows" id="wMiles"></div></details>
+    <div class="wfoot"><span>Card points total <b id="wSum">0</b></span><button id="wClear" type="button">Clear all</button></div>
+  </div>
+</div>
+
+<script>
+/* ===== Award engine: network, availability and pricing (simulated, deterministic) ===== */
+(function(root){
+'use strict';
+const AIRPORT_DATA=`
+JFK|New York|John F. Kennedy|US|NA|40.641|-73.778|-5
+EWR|Newark|Newark Liberty|US|NA|40.690|-74.175|-5
+BOS|Boston|Logan|US|NA|42.366|-71.010|-5
+IAD|Washington|Dulles|US|NA|38.953|-77.456|-5
+PHL|Philadelphia|Philadelphia Intl|US|NA|39.874|-75.242|-5
+ATL|Atlanta|Hartsfield-Jackson|US|NA|33.640|-84.427|-5
+CLT|Charlotte|Charlotte Douglas|US|NA|35.214|-80.943|-5
+MIA|Miami|Miami Intl|US|NA|25.793|-80.290|-5
+MCO|Orlando|Orlando Intl|US|NA|28.431|-81.308|-5
+DTW|Detroit|Detroit Metro|US|NA|42.216|-83.355|-5
+ORD|Chicago|O'Hare|US|NA|41.974|-87.907|-6
+MSP|Minneapolis|Minneapolis-St Paul|US|NA|44.885|-93.222|-6
+DFW|Dallas|Dallas/Fort Worth|US|NA|32.900|-97.040|-6
+IAH|Houston|George Bush Intercontinental|US|NA|29.990|-95.337|-6
+AUS|Austin|Austin-Bergstrom|US|NA|30.197|-97.666|-6
+BNA|Nashville|Nashville Intl|US|NA|36.124|-86.678|-6
+DEN|Denver|Denver Intl|US|NA|39.856|-104.674|-7
+PHX|Phoenix|Sky Harbor|US|NA|33.434|-112.012|-7
+LAS|Las Vegas|Harry Reid|US|NA|36.084|-115.154|-8
+LAX|Los Angeles|Los Angeles Intl|US|NA|33.942|-118.408|-8
+SAN|San Diego|San Diego Intl|US|NA|32.733|-117.190|-8
+SFO|San Francisco|San Francisco Intl|US|NA|37.619|-122.375|-8
+SEA|Seattle|Seattle-Tacoma|US|NA|47.450|-122.309|-8
+HNL|Honolulu|Daniel K. Inouye|US|NA|21.319|-157.922|-10
+YYZ|Toronto|Pearson|CA|NA|43.677|-79.625|-5
+YUL|Montreal|Trudeau|CA|NA|45.470|-73.741|-5
+YVR|Vancouver|Vancouver Intl|CA|NA|49.195|-123.184|-8
+MEX|Mexico City|Benito Juarez|MX|NA|19.436|-99.072|-6
+CUN|Cancun|Cancun Intl|MX|NA|21.037|-86.877|-5
+PTY|Panama City|Tocumen|PA|SA|9.071|-79.383|-5
+BOG|Bogota|El Dorado|CO|SA|4.702|-74.147|-5
+LIM|Lima|Jorge Chavez|PE|SA|-12.022|-77.114|-5
+GRU|Sao Paulo|Guarulhos|BR|SA|-23.432|-46.469|-3
+EZE|Buenos Aires|Ezeiza|AR|SA|-34.822|-58.536|-3
+SCL|Santiago|Arturo Merino Benitez|CL|SA|-33.393|-70.786|-3
+LHR|London|Heathrow|GB|EU|51.470|-0.454|0
+EDI|Edinburgh|Edinburgh|GB|EU|55.950|-3.372|0
+DUB|Dublin|Dublin|IE|EU|53.421|-6.270|0
+CDG|Paris|Charles de Gaulle|FR|EU|49.010|2.548|1
+AMS|Amsterdam|Schiphol|NL|EU|52.310|4.768|1
+FRA|Frankfurt|Frankfurt|DE|EU|50.038|8.562|1
+MUC|Munich|Munich|DE|EU|48.354|11.786|1
+ZRH|Zurich|Zurich|CH|EU|47.465|8.549|1
+MAD|Madrid|Barajas|ES|EU|40.472|-3.561|1
+BCN|Barcelona|El Prat|ES|EU|41.297|2.078|1
+LIS|Lisbon|Humberto Delgado|PT|EU|38.774|-9.134|0
+FCO|Rome|Fiumicino|IT|EU|41.800|12.239|1
+MXP|Milan|Malpensa|IT|EU|45.630|8.723|1
+CPH|Copenhagen|Kastrup|DK|EU|55.618|12.656|1
+HEL|Helsinki|Helsinki-Vantaa|FI|EU|60.317|24.963|2
+ATH|Athens|Athens Intl|GR|EU|37.936|23.947|2
+IST|Istanbul|Istanbul|TR|EU|41.262|28.742|3
+TLV|Tel Aviv|Ben Gurion|IL|ME|32.011|34.887|2
+DXB|Dubai|Dubai Intl|AE|ME|25.253|55.364|4
+AUH|Abu Dhabi|Zayed Intl|AE|ME|24.433|54.651|4
+DOH|Doha|Hamad Intl|QA|ME|25.273|51.608|3
+CAI|Cairo|Cairo Intl|EG|AF|30.122|31.406|2
+ADD|Addis Ababa|Bole|ET|AF|8.978|38.799|3
+NBO|Nairobi|Jomo Kenyatta|KE|AF|-1.319|36.928|3
+JNB|Johannesburg|O. R. Tambo|ZA|AF|-26.139|28.246|2
+CPT|Cape Town|Cape Town Intl|ZA|AF|-33.970|18.597|2
+DEL|Delhi|Indira Gandhi|IN|SAS|28.556|77.100|5.5
+BOM|Mumbai|Chhatrapati Shivaji|IN|SAS|19.089|72.868|5.5
+BLR|Bengaluru|Kempegowda|IN|SAS|13.199|77.707|5.5
+HYD|Hyderabad|Rajiv Gandhi|IN|SAS|17.240|78.429|5.5
+MAA|Chennai|Chennai Intl|IN|SAS|12.990|80.169|5.5
+BKK|Bangkok|Suvarnabhumi|TH|ASIA|13.690|100.750|7
+SIN|Singapore|Changi|SG|ASIA|1.364|103.991|8
+KUL|Kuala Lumpur|KLIA|MY|ASIA|2.746|101.710|8
+HKG|Hong Kong|Hong Kong Intl|HK|ASIA|22.308|113.918|8
+TPE|Taipei|Taoyuan|TW|ASIA|25.080|121.233|8
+MNL|Manila|Ninoy Aquino|PH|ASIA|14.509|121.020|8
+PVG|Shanghai|Pudong|CN|ASIA|31.143|121.805|8
+ICN|Seoul|Incheon|KR|ASIA|37.460|126.440|9
+HND|Tokyo|Haneda|JP|ASIA|35.549|139.780|9
+NRT|Tokyo|Narita|JP|ASIA|35.772|140.393|9
+SYD|Sydney|Kingsford Smith|AU|OC|-33.946|151.177|11
+MEL|Melbourne|Tullamarine|AU|OC|-37.669|144.841|11
+AKL|Auckland|Auckland|NZ|OC|-37.008|174.792|13`;
+const AP={};
+AIRPORT_DATA.trim().split('\n').forEach(line=>{
+  const [code,city,name,cc,region,lat,lon,tz]=line.trim().split('|');
+  AP[code]={code,city,name,cc,region,lat:+lat,lon:+lon,tz:+tz};
+});
+const AP_LIST=Object.values(AP);
+const POPULAR=['JFK','LAX','SFO','ORD','SEA','LHR','CDG','HND','DXB','SIN','HYD','SYD'];
+
+/* Airlines: alliance, hubs, regions served, cabins, surcharges [Y,W,J,F], partner release factor [Y,W,J,F] */
+const AL={
+  UA:{n:'United',a:'star',hubs:['EWR','SFO','IAD','ORD','IAH','LAX','DEN'],lh:5,reg:'NA SA EU ME AF SAS ASIA OC',bigOnly:['SAS','AF','ME'],pe:1},
+  AC:{n:'Air Canada',a:'star',hubs:['YYZ','YVR','YUL'],reg:'NA SA EU ME SAS ASIA OC',bigOnly:['SAS','AF','ME'],pe:1},
+  LH:{n:'Lufthansa',a:'star',hubs:['FRA','MUC'],reg:'NA SA EU ME AF SAS ASIA',pe:1,f:.5,yq:[140,260,420,520]},
+  LX:{n:'Swiss',a:'star',hubs:['ZRH'],reg:'NA SA EU ME AF SAS ASIA',pe:1,f:.4,yq:[140,260,420,520]},
+  NH:{n:'ANA',a:'star',hubs:['HND','NRT'],reg:'NA EU ASIA OC SAS',pe:1,f:.5,yq:[60,90,130,160]},
+  SQ:{n:'Singapore Airlines',a:'star',hubs:['SIN'],reg:'NA EU ME AF SAS ASIA OC',pe:1,f:.5,yq:[30,50,80,100],pf:[1,.45,.35,.25]},
+  TK:{n:'Turkish Airlines',a:'star',hubs:['IST'],reg:'NA SA EU ME AF SAS ASIA OC',yq:[60,90,160,0]},
+  AV:{n:'Avianca',a:'star',hubs:['BOG'],reg:'NA SA EU'},
+  CM:{n:'Copa',a:'star',hubs:['PTY'],reg:'NA SA'},
+  TP:{n:'TAP Air Portugal',a:'star',hubs:['LIS'],reg:'NA SA EU AF',yq:[40,60,90,0]},
+  NZ:{n:'Air New Zealand',a:'star',hubs:['AKL'],reg:'NA ASIA OC',pe:1},
+  BR:{n:'EVA Air',a:'star',hubs:['TPE'],reg:'NA EU ASIA OC SAS',pe:1},
+  ET:{n:'Ethiopian',a:'star',hubs:['ADD'],reg:'NA SA EU AF ME SAS ASIA'},
+  AI:{n:'Air India',a:'star',hubs:['DEL','BOM','BLR'],lh:2,reg:'NA EU ME AF SAS ASIA OC',pe:1,f:.25},
+  AA:{n:'American',a:'oneworld',hubs:['DFW','JFK','MIA','LAX','PHL','ORD','CLT','PHX'],lh:5,reg:'NA SA EU ASIA OC',pe:1,f:.35},
+  BA:{n:'British Airways',a:'oneworld',hubs:['LHR'],reg:'NA SA EU ME AF SAS ASIA OC',pe:1,f:.45,yq:[220,380,560,700]},
+  IB:{n:'Iberia',a:'oneworld',hubs:['MAD'],reg:'NA SA EU',pe:1,yq:[150,250,380,0]},
+  AY:{n:'Finnair',a:'oneworld',hubs:['HEL'],reg:'NA EU ASIA SAS',pe:1,yq:[60,90,140,0]},
+  CX:{n:'Cathay Pacific',a:'oneworld',hubs:['HKG'],reg:'NA EU ME AF SAS ASIA OC',pe:1,f:.4,yq:[40,60,90,110]},
+  JL:{n:'Japan Airlines',a:'oneworld',hubs:['HND','NRT'],reg:'NA EU ASIA OC SAS',pe:1,f:.45,yq:[50,70,100,130]},
+  QF:{n:'Qantas',a:'oneworld',hubs:['SYD','MEL'],reg:'NA SA EU AF ASIA OC',pe:1,f:.3,yq:[120,180,260,320]},
+  QR:{n:'Qatar Airways',a:'oneworld',hubs:['DOH'],reg:'NA SA EU ME AF SAS ASIA OC',f:.15,yq:[70,0,180,250]},
+  AS:{n:'Alaska',a:'oneworld',hubs:['SEA','HNL'],reg:'NA',extra:{NRT:['SEA'],ICN:['SEA','HNL'],HND:['HNL'],SYD:['HNL'],AKL:['HNL']}},
+  DL:{n:'Delta',a:'skyteam',hubs:['ATL','JFK','DTW','LAX','SEA','MSP','BOS'],lh:5,reg:'NA SA EU ME AF SAS ASIA OC',bigOnly:['SAS','AF','ME'],pe:1},
+  AF:{n:'Air France',a:'skyteam',hubs:['CDG'],reg:'NA SA EU ME AF SAS ASIA',pe:1,f:.3,yq:[90,160,230,300],pf:[1,1,1,0]},
+  KL:{n:'KLM',a:'skyteam',hubs:['AMS'],reg:'NA SA EU ME AF SAS ASIA',pe:1,yq:[90,160,230,0]},
+  VS:{n:'Virgin Atlantic',a:'skyteam',hubs:['LHR'],reg:'NA ME AF SAS',pe:1,yq:[180,330,520,0]},
+  KE:{n:'Korean Air',a:'skyteam',hubs:['ICN'],reg:'NA EU ME ASIA OC SAS',f:.3,yq:[60,0,120,160]},
+  AM:{n:'Aeromexico',a:'skyteam',hubs:['MEX'],reg:'NA SA EU ASIA'},
+  EK:{n:'Emirates',a:null,hubs:['DXB'],reg:'NA SA EU ME AF SAS ASIA OC',pe:1,f:.6,yq:[180,260,430,560],pf:[1,1,.6,.15]},
+  EY:{n:'Etihad',a:null,hubs:['AUH'],reg:'NA EU ME AF SAS ASIA OC',f:.25,yq:[60,0,160,220]},
+  EI:{n:'Aer Lingus',a:null,hubs:['DUB'],reg:'NA EU',yq:[80,0,180,0]},
+  LA:{n:'LATAM',a:null,hubs:['LIM','GRU','SCL','BOG'],reg:'NA SA EU AF OC',yq:[30,0,60,0]},
+  B6:{n:'JetBlue',a:null,hubs:['JFK','BOS'],reg:'NA',extra:['LHR','CDG','AMS','DUB','EDI','MAD','BCN','BOG','LIM'],exclude:['HNL','YVR','YUL','YYZ'],jMin:2000},
+  WN:{n:'Southwest',a:null,hubs:['DEN','LAS','PHX','MCO','AUS'],serves:['ATL','AUS','BOS','BNA','DEN','DTW','LAX','LAS','MCO','MIA','ORD','PHX','PHL','SAN','SFO','SEA','IAD','IAH','CUN','HNL','MSP','CLT'],noJ:1}
+};
+for(const k in AL){const a=AL[k];a.code=k;a.reg=a.reg?a.reg.split(' '):[];a.pf=a.pf||[1,1,1,1];a.yq=a.yq||[0,0,0,0];a.f=a.f||0;}
+const CODES=Object.keys(AL);
+const HUBS=[...new Set(CODES.flatMap(c=>AL[c].hubs))];
+const BIG=new Set('JFK LAX SFO ORD LHR CDG FRA AMS HND NRT DXB DOH SIN HKG ICN SYD YYZ MIA BOS IAD DFW ATL SEA MAD BCN FCO DEL BOM BKK GRU MEX IST ZRH MUC EWR IAH DEN YVR TPE JNB CPT AKL MEL EZE SCL LIM BOG TLV DUB LIS MXP'.split(' '));
+const MID=new Set('HYD BLR MAA KUL MNL PVG CAI NBO ATH CPH HEL EDI MCO LAS HNL PTY'.split(' '));
+
+/* Award pricing tables, one-way per traveler: [max miles, Y, W, J, F] */
+const G=[[700,7500,11000,15000,22500],[1500,12500,18000,25000,35000],[3000,17500,27500,35000,50000],[4500,30000,45000,60000,80000],[6000,35000,52500,70000,100000],[7500,40000,60000,80000,110000],[9500,45000,67500,90000,125000],[1e9,55000,80000,105000,150000]];
+const AVIOS=[[650,9000,13500,18000,27000],[1150,11000,16500,27500,41000],[2000,13000,19500,38750,55000],[3000,20000,31250,50000,68000],[4000,25750,38500,62500,90000],[5500,32500,48750,75000,106000],[6500,37500,56250,90000,120000],[7000,43750,65000,105000,140000],[1e9,62500,93750,150000,200000]];
+
+/* Programs. fo/fp = own-metal / partner multipliers on the distance chart. zones = fixed region-pair prices [Y,W,J,F,(farMiles,Yf,Wf,Jf,Ff)]. */
+const PG={
+  UA:{n:'United MileagePlus',s:'MileagePlus',b:'UA',own:['UA'],books:['star','EK'],host:'united.com',url:'https://www.united.com',dyn:1,fo:[1,1.1,1.05,1],fp:[1.1,1.25,1.4,1.4],
+      note:'Partner business seats cost more than seats on United’s own flights. No carrier surcharges on any airline.'},
+  AC:{n:'Air Canada Aeroplan',s:'Aeroplan',b:'AC',own:['AC'],books:['star','EY','EK'],host:'aircanada.com',url:'https://www.aircanada.com/aeroplan',dyn:1,fee:30,
+      zones:{'EU-NA':[35000,50000,60000,80000,4000,40000,55000,70000,90000],'ASIA-NA':[45000,65000,75000,105000,7000,55000,75000,87500,115000]},
+      note:'Adds a partner booking fee of about $30. Prices step up on longer flights within a region pair.'},
+  AV:{n:'Avianca LifeMiles',s:'LifeMiles',b:'LM',own:['AV'],books:['star'],host:'lifemiles.com',url:'https://www.lifemiles.com',feeAll:25,fp:[.95,1,.95,.95],fo:[.9,1,.9,.9],
+      zones:{'EU-NA':[30000,0,63000,87000],'ASIA-NA':[42000,0,75000,105000]},
+      note:'Never adds carrier surcharges. Charges a small booking fee on every award.'},
+  TK:{n:'Turkish Miles&Smiles',s:'Miles&Smiles',b:'TK',own:['TK'],books:['star'],host:'turkishairlines.com',url:'https://www.turkishairlines.com',fp:[.85,.9,.85,.85],fo:[.8,.9,.8,.8],yq:['TK'],
+      note:'Low partner prices. Some partner awards have to be booked by phone.'},
+  SQ:{n:'Singapore KrisFlyer',s:'KrisFlyer',b:'SQ',own:['SQ'],books:['star'],host:'singaporeair.com',url:'https://www.singaporeair.com',dyn:1,fo:[1,1,.95,1.05],fp:[1.2,1.2,1.2,1.2],yq:['SQ'],
+      note:'Singapore Airlines opens far more premium seats to its own members than to partner programs.'},
+  NH:{n:'ANA Mileage Club',s:'ANA Mileage Club',b:'NH',own:['NH'],books:['star'],host:'ana.co.jp',url:'https://www.ana.co.jp/en/us/',fo:[.75,.75,.75,.7],fp:[.75,.75,.75,.7],yq:['NH','LH','LX'],
+      note:'Partner awards must be round-trip. The price shown is half the round-trip price.'},
+  AA:{n:'American AAdvantage',s:'AAdvantage',b:'AA',own:['AA'],books:['oneworld','EI'],host:'aa.com',url:'https://www.aa.com',dyn:1,yq:['BA'],
+      zones:{'EU-NA':[30000,40000,57500,85000],'ASIA-NA':[35000,50000,60000,80000,7600,40000,55000,70000,110000],'ME-NA':[40000,0,70000,115000],'NA-SAS':[40000,0,70000,115000],'NA-OC':[40000,0,80000,110000],'AF-NA':[40000,0,75000,0],'NA-SA':[17500,0,30000,0,3500,30000,0,57500,85000]},
+      note:'Fixed prices on partner airlines. Adds carrier surcharges only on British Airways flights.'},
+  BA:{n:'British Airways Club',s:'BA Avios',b:'BA',own:['BA'],books:['oneworld','EI'],host:'britishairways.com',url:'https://www.britishairways.com',mode:'seg',bands:AVIOS,fo:[.85,.85,.85,.85],yq:'all',r:250,
+      note:'Avios are charged per flight, so nonstops cost least. Expect high surcharges on British Airways flights.'},
+  IB:{n:'Iberia Club',s:'Iberia Avios',b:'IB',own:['IB'],books:['oneworld','EI'],host:'iberia.com',url:'https://www.iberia.com',mode:'flown',bands:AVIOS,fo:[.75,.7,.55,1],yq:'all',r:250,
+      note:'Off-peak Iberia business seats are among the cheapest premium awards to Europe. Avios move 1:1 between Iberia, British Airways and Qatar.'},
+  QR:{n:'Qatar Privilege Club',s:'Qatar Avios',b:'QR',own:['QR'],books:['oneworld'],host:'qatarairways.com',url:'https://www.qatarairways.com',mode:'seg',modeOwn:'flown',bands:AVIOS,fo:[.7,.7,.67,.8],yq:'all',r:250,
+      note:'Qatar’s own flights are priced by distance flown. Avios move 1:1 to British Airways and Iberia.'},
+  CX:{n:'Cathay Asia Miles',s:'Asia Miles',b:'CX',own:['CX'],books:['oneworld'],host:'cathaypacific.com',url:'https://www.cathaypacific.com',mode:'flown',fo:[.9,.9,.95,1],fp:[1,1,1.05,1.05],yq:'all',
+      note:'Priced by the total distance you fly.'},
+  AS:{n:'Alaska Atmos Rewards',s:'Atmos Rewards',b:'AS',own:['AS'],books:['oneworld','LA'],host:'alaskaair.com',url:'https://www.alaskaair.com',dyn:1,yq:['BA'],
+      zones:{'ASIA-NA':[35000,47500,65000,75000],'EU-NA':[30000,45000,60000,85000],'ME-NA':[42500,0,70000,100000],'NA-OC':[42500,0,70000,0],'NA-SAS':[45000,0,80000,0]},
+      note:'Fixed partner prices by region. Strong for Japan Airlines, Cathay Pacific and Qatar.'},
+  JL:{n:'JAL Mileage Bank',s:'JAL Mileage Bank',b:'JL',own:['JL'],books:['oneworld'],host:'jal.co.jp',url:'https://www.jal.co.jp/en/',mode:'flown',fo:[.85,.85,.85,.85],fp:[.95,.95,.95,.95],yq:'all',
+      note:'Priced by distance flown. Japan Airlines opens more seats to its own members.'},
+  DL:{n:'Delta SkyMiles',s:'SkyMiles',b:'DL',own:['DL'],books:['skyteam','LA'],host:'delta.com',url:'https://www.delta.com',dyn:2,fo:[1.15,1.4,1.55,1],fp:[1.4,1.9,2.4,2.4],
+      note:'No award chart. Prices follow demand and can swing a lot from day to day.'},
+  AF:{n:'Flying Blue',s:'Flying Blue',b:'FB',own:['AF','KL'],books:['skyteam'],host:'flyingblue.com',url:'https://www.flyingblue.com',dyn:1,promo:1,fo:[.85,.9,1,1.1],fp:[1.05,1.1,1.25,1.25],yq:'all',
+      note:'Air France and KLM’s program. Prices move with demand, and monthly Promo Rewards take 25–50% off select routes.'},
+  VS:{n:'Virgin Atlantic Flying Club',s:'Flying Club',b:'VS',own:['VS'],books:['skyteam','NH'],host:'virginatlantic.com',url:'https://www.virginatlantic.com',dyn:1,fo:[.5,.6,.8,1],yq:'all',
+      cz:{NH:{'ASIA-NA':[35000,45000,52500,72500]},DL:{'EU-NA':[20000,30000,50000,0]},AF:{'EU-NA':[25000,35000,55000,0]},KL:{'EU-NA':[25000,35000,55000,0]}},
+      note:'High surcharges on Virgin Atlantic flights. ANA business and first to Japan are some of the best fixed prices anywhere.'},
+  EK:{n:'Emirates Skywards',s:'Skywards',b:'EK',own:['EK'],books:[],host:'emirates.com',url:'https://www.emirates.com',dyn:1,fo:[1,1.1,1.3,1.35],yq:'all',
+      note:'Carrier surcharges are high on most Emirates awards.'},
+  EY:{n:'Etihad Guest',s:'Etihad Guest',b:'EY',own:['EY'],books:[],host:'etihad.com',url:'https://www.etihad.com',dyn:1,fo:[.95,1,1.05,1.3],yq:'all',
+      note:'Etihad flights are priced by distance.'},
+  B6:{n:'JetBlue TrueBlue',s:'TrueBlue',b:'B6',own:['B6'],books:[],host:'jetblue.com',url:'https://www.jetblue.com',rev:.0135,
+      note:'Points follow the cash fare, at about 1.35¢ each.'},
+  WN:{n:'Southwest Rapid Rewards',s:'Rapid Rewards',b:'WN',own:['WN'],books:[],host:'southwest.com',url:'https://www.southwest.com',rev:.014,
+      note:'Points follow the cash fare, at about 1.4¢ each.'}
+};
+for(const k in PG){PG[k].code=k;PG[k].al=AL[PG[k].own[0]].a||'none';}
+
+/* Card transfer partners: bank -> program -> miles per point */
+const BANKS={
+  MR:{n:'Amex Membership Rewards',s:'Amex',short:'MR'},
+  UR:{n:'Chase Ultimate Rewards',s:'Chase',short:'UR'},
+  C1:{n:'Capital One Miles',s:'Capital One',short:'C1'},
+  TY:{n:'Citi ThankYou Points',s:'Citi',short:'TY'},
+  BILT:{n:'Bilt Points',s:'Bilt',short:'Bilt'}
+};
+const XFER={
+  MR:{AC:1,AF:1,NH:1,AV:1,BA:1,CX:1,DL:1,EK:.8,EY:1,IB:1,QR:1,SQ:1,VS:1,B6:.8},
+  UR:{AC:1,AF:1,BA:1,EK:1,IB:1,SQ:1,UA:1,VS:1,B6:1,WN:1},
+  C1:{AC:1,AV:1,BA:1,CX:1,EK:.75,EY:1,AF:1,JL:.75,SQ:1,TK:1,VS:1,B6:.6},
+  TY:{AA:1,AV:1,CX:1,EK:.8,EY:1,AF:1,B6:1,QR:1,SQ:1,TK:1,VS:1},
+  BILT:{AC:1,AS:1,AV:1,BA:1,CX:1,EK:1,EY:1,AF:1,IB:1,QR:1,TK:1,UA:1,VS:1}
+};
+const XT={'MR-NH':'1–2 days','MR-SQ':'12–24 hours','UR-SQ':'12–24 hours','C1-SQ':'12–24 hours','TY-SQ':'12–24 hours','C1-TK':'up to 2 days','TY-TK':'up to 2 days','BILT-TK':'up to 2 days','C1-JL':'1–2 days'};
+const xtime=(b,p)=>XT[b+'-'+p]||'usually instant';
+
+const CABINS=['Economy','Premium economy','Business','First'];
+const BASEP=[.72,.5,.42,.28];
+const EU_CC=new Set(['IE','FR','NL','DE','CH','ES','PT','IT','DK','FI','GR']);
+const RATES=[[.17,.25,.5,.7],[.13,.2,.4,.55],[.15,.3,.85,1.4]];
+const FLEET={UA:['787-10','777-300ER','787-9','767-400ER'],AA:['777-300ER','787-9','787-8'],DL:['A350-900','A330-900neo','767-400ER'],AC:['787-9','777-300ER','787-8'],
+  BA:['777-300ER','A350-1000','787-10','A380'],VS:['A350-1000','787-9','A330-900neo'],LH:['A350-900','747-8','787-9'],LX:['777-300ER','A330-300'],AF:['777-300ER','A350-900','787-9'],
+  KL:['777-300ER','787-10','A330-200'],IB:['A350-900','A330-300'],AY:['A350-900','A330-300'],EI:['A330-300','A321LR'],TP:['A330-900neo','A321LR'],EK:['A380','777-300ER','A350-900'],
+  QR:['A350-1000','777-300ER','A380','787-9'],EY:['787-10','A350-1000','787-9'],TK:['777-300ER','A350-900','787-9'],SQ:['A350-900','777-300ER','A380'],CX:['A350-1000','777-300ER','A350-900'],
+  NH:['777-300ER','787-9'],JL:['A350-1000','777-300ER','787-9'],KE:['777-300ER','787-9','A380'],BR:['777-300ER','787-10'],QF:['A380','787-9','A330-300'],NZ:['787-9','777-300ER'],
+  ET:['A350-900','787-9'],AI:['777-300ER','A350-900','787-8'],AV:['787-8'],CM:['737 MAX 9'],AM:['787-9','787-8'],AS:['787-9'],LA:['787-9','787-8','777-300ER']};
+const PROD={UA:[3000,'Polaris'],DL:[2400,'Delta One'],AA:[2400,'Flagship Business'],B6:[2000,'Mint'],VS:[0,'Upper Class'],QR:[2500,'Qsuite'],BA:[3000,'Club World']};
+
+/* deterministic hash -> [0,1) */
+function h32(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}h^=h>>>16;h=Math.imul(h,0x85ebca6b);h^=h>>>13;h=Math.imul(h,0xc2b2ae35);h^=h>>>16;return h>>>0;}
+const rnd=s=>h32(s)/4294967296;
+
+const _gc=new Map();
+function gcd(a,b){
+  const k=a<b?a+b:b+a;let v=_gc.get(k);if(v!==undefined)return v;
+  const A=AP[a],B=AP[b],t=Math.PI/180,dLat=(B.lat-A.lat)*t,dLon=(B.lon-A.lon)*t;
+  const x=Math.sin(dLat/2)**2+Math.cos(A.lat*t)*Math.cos(B.lat*t)*Math.sin(dLon/2)**2;
+  v=Math.round(2*3958.8*Math.asin(Math.sqrt(x)));_gc.set(k,v);return v;
+}
+const zone=(a,b)=>[AP[a].region,AP[b].region].sort().join('-');
+
+const _fl=new Map();
+function flies(c,x,y){const k=c+x+y;let v=_fl.get(k);if(v===undefined){v=fliesRaw(c,x,y);_fl.set(k,v);}return v;}
+function fliesRaw(c,x,y){
+  if(x===y)return false;
+  const A=AL[c],dist=gcd(x,y);
+  if(dist<90||dist>9650)return false;
+  const pair=x<y?x+y:y+x;
+  if(A.serves){
+    if(!A.serves.includes(x)||!A.serves.includes(y)||dist>2950)return false;
+    const nh=(A.hubs.includes(x)?1:0)+(A.hubs.includes(y)?1:0);
+    return nh===2||rnd('wn'+pair)<(nh?.92:.45);
+  }
+  const hx=A.hubs.includes(x),hy=A.hubs.includes(y);
+  if(!hx&&!hy)return false;
+  if(hx&&hy)return true;
+  const oc=hx?y:x,hub=hx?x:y,r=rnd('rt'+c+pair);
+  if(A.exclude&&A.exclude.includes(oc))return false;
+  if(A.extra){
+    const ex=Array.isArray(A.extra)?A.extra.includes(oc):!!(A.extra[oc]&&A.extra[oc].includes(hub));
+    if(ex)return r<.9;
+  }
+  if(!A.reg.includes(AP[oc].region))return false;
+  const big=BIG.has(oc),mid=MID.has(oc);
+  if(A.bigOnly&&A.bigOnly.includes(AP[oc].region)&&!big)return false;
+  let p;
+  if(dist>4000){
+    const primary=A.hubs.indexOf(hub)<(A.lh||A.hubs.length);
+    p=primary?(big?.88:mid?.5:.25):(big?.4:mid?.1:.03);
+  }else if(dist<600)p=.97;
+  else if(AP[oc].region===AP[hub].region&&dist<3000)p=big?.96:.88;
+  else p=big?.93:.7;
+  return r<p;
+}
+
+const BOOKERS={};
+for(const c of CODES)BOOKERS[c]=Object.keys(PG).filter(p=>PG[p].own.includes(c)||PG[p].books.includes(c)||(AL[c].a&&PG[p].books.includes(AL[c].a)));
+function commonProgs(codes){let s=BOOKERS[codes[0]];for(let i=1;i<codes.length;i++){const n=BOOKERS[codes[i]];s=s.filter(p=>n.includes(p));}return s;}
+
+function aircraft(al,dist,r){
+  const pick=l=>l[Math.floor(r*l.length)];
+  if(al==='WN')return pick(['737-800','737 MAX 8','737-700']);
+  if(al==='B6')return dist>3000?'A321LR':pick(['A321neo','A220-300','A320']);
+  if(dist>3200)return pick(FLEET[al]||['787-9','A350-900','777-300ER']);
+  if(dist>1500)return pick(['A321neo','737 MAX 8','A330-300','787-8','737-900ER']);
+  return pick(['A320neo','737 MAX 8','A220-300','A321neo','737-800']);
+}
+function flightNo(al,from,to,i){
+  const d=gcd(from,to),span=(al==='WN'||al==='B6'||al==='AS')?2400:d>3000?290:1900;
+  return 1+Math.floor(rnd('fn'+al+from+to)*span)+i*2;
+}
+function depMinute(s){
+  const A=AP[s.from],B=AP[s.to],r=rnd('dep'+s.al+s.fn+s.from);let lo=360,hi=1350;
+  if(s.dist>2500){
+    if(A.region==='NA'&&B.region==='EU'){lo=1020;hi=1350;}
+    else if(A.region==='EU'&&B.region==='NA'){lo=510;hi=990;}
+    else if(A.region==='NA'&&(B.region==='ASIA'||B.region==='OC')){lo=600;hi=1380;}
+  }
+  return lo+Math.round(r*(hi-lo)/5)*5;
+}
+function wind(A,B,dist){if(dist<1500)return 1;const dl=((B.lon-A.lon+540)%360)-180;return dl>0?.94:1.07;}
+
+function mkItin(defs){
+  const segs=defs.map(([al,from,to,i])=>{
+    const A=AL[al],dist=gcd(from,to),fn=flightNo(al,from,to,i),k=al+fn+from+to;
+    const cab=[1,
+      A.pe&&dist>2500&&rnd('w'+k)<.85?1:0,
+      A.noJ?0:A.jMin?(dist>=A.jMin&&rnd('j'+k)<.75?1:0):1,
+      A.f&&dist>3500&&rnd('f'+k)<A.f?1:0];
+    const pr=PROD[al];
+    return {al,from,to,dist,fn,cab,ac:aircraft(al,dist,rnd('ac'+k)),prod:pr&&dist>=pr[0]?pr[1]:''};
+  });
+  let t=0;
+  segs.forEach((s,i)=>{
+    const A=AP[s.from],B=AP[s.to];
+    if(i===0){t=depMinute(s)-A.tz*60;}
+    else{
+      const p=segs[i-1],intl=AP[p.from].cc!==A.cc||B.cc!==A.cc;
+      s.lay=(intl?85:60)+Math.round(rnd('lay'+s.al+s.fn+p.fn)*38)*5;
+      t=p.arrU+s.lay;
+    }
+    s.depU=t;s.dur=Math.round((28+s.dist/8.1*wind(A,B,s.dist))/5)*5;s.arrU=t+s.dur;
+  });
+  const f=segs[0],l=segs[segs.length-1];
+  const it={id:segs.map(s=>s.al+s.fn+s.from).join('-'),segs,o:f.from,d:l.to,stops:segs.length-1,via:segs.slice(1).map(s=>s.from),
+    gc:gcd(f.from,l.to),flown:segs.reduce((a,s)=>a+s.dist,0),longest:segs.reduce((a,s)=>s.dist>a.dist?s:a),depU:f.depU,arrU:l.arrU,dur:l.arrU-f.depU};
+  it.depL=f.depU+AP[it.o].tz*60;
+  const base=Math.floor(it.depL/1440);
+  segs.forEach(s=>{s.depL=s.depU+AP[s.from].tz*60;s.arrL=s.arrU+AP[s.to].tz*60;s.depOff=Math.floor(s.depL/1440)-base;s.arrOff=Math.floor(s.arrL/1440)-base;});
+  it.arrL=l.arrL;it.dayOff=l.arrOff;
+  return it;
+}
+function freq(c,o,d,D){
+  const A=AL[c],hh=A.hubs.includes(o)&&A.hubs.includes(d),big=BIG.has(o)&&BIG.has(d);
+  let n=D>6000?1:(hh||big?2:1);if(D<3500&&hh)n=3;
+  return 1+Math.floor(rnd('fq'+c+o+d)*n);
+}
+
+const _sk=new Map();
+function skeleton(o,d){
+  const key=o+'-'+d;if(_sk.has(key))return _sk.get(key);
+  const D=gcd(o,d),out=[];
+  if(o===d||!D){_sk.set(key,[]);return [];}
+  for(const c of CODES)if(flies(c,o,d)){const n=freq(c,o,d,D);for(let i=0;i<n;i++)out.push([[c,o,d,i]]);}
+  const lim=D<800?1.75:D<2500?1.45:D<5000?1.28:1.2;
+  let ones;
+  const findOnes=lim=>{
+    const res=[];
+    for(const h of HUBS){
+      if(h===o||h===d)continue;
+      const r=(gcd(o,h)+gcd(h,d))/D;if(r>lim)continue;
+      const a1=CODES.filter(c=>flies(c,o,h));if(!a1.length)continue;
+      const a2=CODES.filter(c=>flies(c,h,d));
+      for(const c1 of a1)for(const c2 of a2)if(commonProgs([c1,c2]).length)res.push({r:r+(c1===c2?0:.03),defs:[[c1,o,h,0],[c2,h,d,0]]});
+    }
+    return res;
+  };
+  ones=findOnes(lim);
+  if(!out.length&&ones.length<3)ones=findOnes(2.3);
+  ones.sort((a,b)=>a.r-b.r);
+  ones.slice(0,Math.max(10,34-out.length)).forEach(x=>out.push(x.defs));
+  if(out.length<5){
+    const twos=[];
+    for(const h1 of HUBS){
+      if(h1===o||h1===d)continue;
+      const d1=gcd(o,h1);if(d1>D*1.2)continue;
+      const a1=CODES.filter(c=>flies(c,o,h1));if(!a1.length)continue;
+      for(const h2 of HUBS){
+        if(h2===h1||h2===o||h2===d)continue;
+        const r=(d1+gcd(h1,h2)+gcd(h2,d))/D;if(r>1.4)continue;
+        const a2=CODES.filter(c=>flies(c,h1,h2));if(!a2.length)continue;
+        const a3=CODES.filter(c=>flies(c,h2,d));if(!a3.length)continue;
+        for(const c1 of a1)for(const c2 of a2)for(const c3 of a3)if(commonProgs([c1,c2,c3]).length)twos.push({r,defs:[[c1,o,h1,0],[c2,h1,h2,0],[c3,h2,d,0]]});
+      }
+    }
+    twos.sort((a,b)=>a.r-b.r);twos.slice(0,12).forEach(x=>out.push(x.defs));
+  }
+  const seen=new Set(),its=[];
+  for(const defs of out){const it=mkItin(defs);if(!seen.has(it.id)){seen.add(it.id);its.push(it);}}
+  _sk.set(key,its);return its;
+}
+
+function band(b,d){for(const r of b)if(d<=r[0])return r.slice(1);return b[b.length-1].slice(1);}
+function zoneVal(row,c,d){
+  let v=row.slice(0,4);if(row.length>4&&d>row[4])v=row.slice(5,9);
+  const y=v[0],j=v[2],w=v[1]||(y+j)/2,f=v[3]||j*1.5;
+  return [y,w,j,f][c];
+}
+function chartPts(P,it,c,own){
+  const mode=(own&&P.modeOwn)||P.mode||'od',zk=zone(it.o,it.d),lc=it.longest.al;
+  let row=null;
+  if(!own&&P.cz&&P.cz[lc]&&P.cz[lc][zk])row=P.cz[lc][zk];
+  else if(mode==='od'&&P.zones&&P.zones[zk])row=P.zones[zk];
+  if(row)return zoneVal(row,c,it.gc);
+  const bands=P.bands||G,f=(own?P.fo:P.fp)||[1,1,1,1];
+  const pts=mode==='seg'?it.segs.reduce((t,s)=>t+band(bands,s.dist)[c],0):band(bands,mode==='flown'?it.flown:it.gc)[c];
+  return pts*f[c];
+}
+function avail(s,c,date,dOut){
+  const k=date+s.al+s.fn+s.from+c,A=AL[s.al];
+  let p=BASEP[c]*A.pf[c];
+  if(c===3&&(s.al==='LH'||s.al==='LX'))p=dOut<=15?.6:0;
+  if(dOut<=7)p=Math.min(.95,p*1.15);
+  const partner=rnd('pa'+k)<p;
+  return {partner,own:partner||rnd('ow'+k)<(c===3?.12:.3),seats:1+Math.floor(rnd('se'+k)*[7,4,4,2][c])};
+}
+function taxes(it,c){
+  let t=0;
+  it.segs.forEach((s,i)=>{
+    const A=AP[s.from],B=AP[s.to];
+    if(A.cc==='US'){t+=B.cc==='US'?5.6:46.4;return;}
+    if(B.cc==='US')t+=31.5;
+    if(A.cc==='GB'){t+=i===0?(s.dist<2000?(c?32:17):(c?252:112))+(s.from==='LHR'?72:0):12;}
+    else if(A.cc==='CA')t+=52;
+    else if(EU_CC.has(A.cc))t+=48+(c>=2?22:0);
+    else t+=38;
+  });
+  return Math.round(t*100)/100;
+}
+function yq(P,it,eff){
+  if(!P.yq)return 0;let t=0;
+  it.segs.forEach((s,i)=>{if(P.yq!=='all'&&!P.yq.includes(s.al))return;const v=AL[s.al].yq[eff[i]]||0;t+=s.dist<2000?v*.35:v;});
+  return Math.round(t);
+}
+function cashFare(it,eff,date){
+  const f=.8+rnd('cash'+it.id+date)*.55;let t=0;
+  it.segs.forEach((s,i)=>{const cl=s.dist<1500?0:s.dist<3000?1:2;t+=60+s.dist*RATES[cl][eff[i]];});
+  if(it.segs.length>1)t*=.9;
+  return Math.round(t*f);
+}
+function effCab(s,c){for(let k=c;k>=0;k--)if(s.cab[k])return k;return 0;}
+
+function optionsFor(it,c,date,dOut){
+  if(!it.longest.cab[c])return [];
+  const eff=it.segs.map(s=>effCab(s,c)),mixed=eff.some(k=>k!==c);
+  const avs=it.segs.map((s,i)=>avail(s,eff[i],date,dOut));
+  const tx=taxes(it,c),cash=cashFare(it,eff,date)+tx;
+  const out=[];
+  for(const p of commonProgs(it.segs.map(s=>s.al))){
+    const P=PG[p],own=it.segs.map(s=>P.own.includes(s.al)),allOwn=own.every(Boolean),rr=rnd('pr'+p+it.id+date+c);
+    let pts,level,seats,saver=false;
+    if(P.rev){
+      if(!allOwn)continue;
+      pts=Math.max(1000,Math.round((cash-tx)/P.rev/100)*100);level='Cash-based';seats=9;
+    }else{
+      let all=true,ok=true;
+      avs.forEach((a,i)=>{const sv=own[i]?a.own:a.partner;if(!sv){all=false;if(!(own[i]&&P.dyn))ok=false;}});
+      if(!ok)continue;
+      pts=chartPts(P,it,c,allOwn);
+      if(!all){level='Standard';pts*=1.45+rr*1.75;seats=9;}
+      else{
+        saver=true;level='Saver';seats=Math.min(...avs.map(a=>a.seats));
+        if(P.dyn===2){if(rr<.08){pts*=.55;level='Flash sale';}else pts*=.9+rr*.35;}
+        else if(P.promo&&allOwn&&rr<.15){pts*=.75;level='Promo';}
+      }
+      const R=P.r||500;pts=Math.max(R*8,Math.round(pts/R)*R);
+    }
+    const fees=Math.round((tx+yq(P,it,eff)+(P.fee&&!allOwn?P.fee:0)+(P.feeAll||0))*100)/100;
+    out.push({p,pts,fees,level,seats,saver,mixed,allOwn,cash,cpp:Math.max(0,cash-fees)/pts*100});
+  }
+  out.sort((a,b)=>a.pts-b.pts||a.fees-b.fees);
+  return out;
+}
+function parseISO(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function daysBetween(a,b){return Math.round((parseISO(b)-parseISO(a))/864e5);}
+function search(o,d,date,c,today){
+  const dOut=daysBetween(today,date);
+  if(dOut<0)return {error:'past',rows:[],dOut};
+  if(dOut>331)return {error:'far',rows:[],dOut};
+  return {rows:skeleton(o,d).map(it=>({it,opts:optionsFor(it,c,date,dOut)})),dOut};
+}
+root.WP={AP,AP_LIST,POPULAR,AL,PG,BANKS,XFER,xtime,CABINS,search,skeleton,gcd,zone,effCab,parseISO,daysBetween};
+})(typeof window!=='undefined'?window:globalThis);
+</script>
+
+<script>
+/* ===== Interface ===== */
+(function(){
+'use strict';
+const {AP,AP_LIST,POPULAR,AL,PG,BANKS,XFER,xtime,CABINS,search,gcd,effCab,parseISO,daysBetween}=window.WP;
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+function fmtK(n){if(n>=1e6)return (Math.round(n/1e4)/100)+'M';if(n<1000)return String(Math.round(n));const v=n/1000;return (Number.isInteger(v)?v:Math.round(v*100)/100)+'k';}
+const money=v=>v<100?'$'+v.toFixed(2):'$'+fmt(v);
+const ratio=r=>'1:'+(+r.toFixed(2));
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function addDays(s,n){const d=parseISO(s);d.setDate(d.getDate()+n);return iso(d);}
+function longDate(s){const d=parseISO(s);return DOW[d.getDay()]+', '+MON[d.getMonth()]+' '+d.getDate();}
+function clock(m){m=((m%1440)+1440)%1440;let h=Math.floor(m/60);const mm=m%60,ap=h<12?'am':'pm';h=h%12||12;return h+':'+String(mm).padStart(2,'0')+ap;}
+function dur(m){return Math.floor(m/60)+'h '+String(m%60).padStart(2,'0')+'m';}
+const off=n=>n>0?'<sup>+'+n+'</sup>':'';
+const reduceMotion=()=>window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- wallet (per-browser) ---------- */
+const LS_KEY='waypoint.wallet.v1';
+const EXAMPLE={banks:{MR:82000,UR:125000,C1:46000,TY:0,BILT:18000},miles:{AA:14200,UA:6800},example:true};
+function loadWallet(){
+  try{const raw=localStorage.getItem(LS_KEY);if(raw){const w=JSON.parse(raw);if(w&&w.banks)return {banks:Object.assign({},w.banks),miles:Object.assign({},w.miles||{}),example:!!w.example};}}catch(e){}
+  return JSON.parse(JSON.stringify(EXAMPLE));
+}
+let W=loadWallet();
+function saveWallet(){try{localStorage.setItem(LS_KEY,JSON.stringify(W));}catch(e){}}
+const bankTotal=()=>Object.values(W.banks).reduce((a,b)=>a+(b||0),0);
+const anyBalance=()=>bankTotal()>0||Object.values(W.miles).some(v=>v>0);
+function reach(p){let t=W.miles[p]||0;for(const b in XFER){const r=XFER[b][p];if(r)t+=Math.floor((W.banks[b]||0)/1000)*1000*r;}return Math.floor(t);}
+function plan(p,need){
+  const steps=[];let rem=need;
+  const own=Math.min(W.miles[p]||0,rem);if(own>0){steps.push({kind:'own',amt:own});rem-=own;}
+  const banks=Object.keys(XFER).filter(b=>XFER[b][p]&&(W.banks[b]||0)>=1000).sort((a,b)=>XFER[b][p]-XFER[a][p]||(W.banks[b]-W.banks[a]));
+  for(const b of banks){
+    if(rem<=0)break;
+    const r=XFER[b][p],want=Math.ceil(rem/r/1000)*1000,amt=Math.min(want,Math.floor(W.banks[b]/1000)*1000);
+    if(amt<=0)continue;
+    const got=Math.floor(amt*r);steps.push({kind:'xfer',bank:b,amt,got,r});rem-=got;
+  }
+  return {steps,short:Math.max(0,Math.ceil(rem))};
+}
+
+/* ---------- state ---------- */
+const TODAY=iso(new Date());
+const S={o:'JFK',d:'LHR',date:addDays(TODAY,21),cab:2,pax:1,sort:'points',stops:9,xP:new Set(),xA:new Set(),maxFee:Infinity,mine:false,open:null,plan:{}};
+let CUR={rows:[]};
+
+function optsVisible(r){return r.opts.filter(o=>o.seats>=S.pax&&!S.xP.has(o.p)&&o.fees<=S.maxFee&&(!S.mine||reach(o.p)>=o.pts*S.pax));}
+function rowPasses(r){return r.it.stops<=S.stops&&!r.it.segs.some(s=>S.xA.has(s.al));}
+function pickBest(list){
+  if(S.sort==='fees')return list.slice().sort((a,b)=>a.fees-b.fees||a.pts-b.pts)[0];
+  if(S.sort==='value')return list.slice().sort((a,b)=>b.cpp-a.cpp)[0];
+  return list[0];
+}
+function visibleRows(res){
+  return res.rows.filter(rowPasses).map(r=>{const vis=optsVisible(r);return {it:r.it,opts:r.opts,vis,best:vis.length?pickBest(vis):null};}).filter(r=>r.best);
+}
+const SORTS={
+  points:(a,b)=>a.best.pts-b.best.pts||a.best.fees-b.best.fees,
+  fees:(a,b)=>a.best.fees-b.best.fees||a.best.pts-b.best.pts,
+  value:(a,b)=>b.best.cpp-a.best.cpp,
+  duration:(a,b)=>a.it.dur-b.it.dur,
+  depart:(a,b)=>a.it.depL-b.it.depL
+};
+
+/* ---------- small renderers ---------- */
+const badge=p=>'<span class="pb pb-'+PG[p].al+'" title="'+esc(PG[p].n)+'">'+PG[p].b+'</span>';
+function levelChip(o){const k=o.level==='Saver'?'saver':o.level==='Promo'?'promo':o.level==='Flash sale'?'flash':'std';return '<span class="chip lv-'+k+'">'+o.level+'</span>';}
+function coverChip(o){
+  if(!anyBalance())return '';
+  const need=o.pts*S.pax,rc=reach(o.p);
+  return rc>=need?'<span class="chip good">You can book</span>':'<span class="chip warn">'+fmtK(need-rc)+' short</span>';
+}
+
+function renderRoute(){
+  const A=AP[S.o],B=AP[S.d];
+  $('#route').innerHTML=
+    '<div class="rp"><span class="rc">'+A.code+'</span><span class="rcity">'+esc(A.city)+'</span></div>'+
+    '<div class="airway"><span class="aw-line" aria-hidden="true"></span><span class="aw-d"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 14.2 9.8 21.5 12 14.2 14.2 12 21.5 9.8 14.2 2.5 12 9.8 9.8Z" fill="currentColor"/></svg>'+fmt(gcd(S.o,S.d))+' mi</span></div>'+
+    '<div class="rp rp-r"><span class="rc">'+B.code+'</span><span class="rcity">'+esc(B.city)+'</span></div>';
+  const trav=S.pax+' traveler'+(S.pax>1?'s':'');
+  $('#rmeta').innerHTML='<span>'+longDate(S.date)+' · '+CABINS[S.cab]+' · '+trav+'</span><a class="sim" href="#about">Simulated data</a>'+
+    (W.example?'<button class="linkish" type="button" data-open-wallet>Using example balances. Enter yours</button>':'');
+}
+
+function renderDates(){
+  let start=addDays(S.date,-3);if(daysBetween(TODAY,start)<0)start=TODAY;
+  const days=[];for(let i=0;i<7;i++)days.push(addDays(start,i));
+  const mins=days.map(dt=>{
+    const res=search(S.o,S.d,dt,S.cab,TODAY);if(res.error)return null;
+    let m=Infinity;for(const r of res.rows){if(!rowPasses(r))continue;for(const o of optsVisible(r))if(o.pts<m)m=o.pts;}
+    return m===Infinity?null:m;
+  });
+  const low=Math.min(...mins.filter(v=>v!=null));
+  $('#dates').innerHTML=days.map((dt,i)=>{
+    const d=parseISO(dt),m=mins[i];
+    return '<button type="button" class="day'+(m!=null&&m===low?' low':'')+'" data-date="'+dt+'" aria-pressed="'+(dt===S.date)+'"><span class="dw">'+DOW[d.getDay()]+' '+MON[d.getMonth()]+' '+d.getDate()+'</span><span class="dp">'+(m!=null?fmtK(m):'—')+'</span></button>';
+  }).join('');
+}
+
+function renderSummary(rows){
+  const all=rows.flatMap(r=>r.vis.map(o=>({o,it:r.it})));
+  const el=$('#summary');
+  if(!all.length){el.innerHTML='';el.hidden=true;return;}
+  el.hidden=false;
+  const few=all.reduce((a,b)=>b.o.pts<a.o.pts||(b.o.pts===a.o.pts&&b.o.fees<a.o.fees)?b:a);
+  const cheap=all.reduce((a,b)=>b.o.fees<a.o.fees||(b.o.fees===a.o.fees&&b.o.pts<a.o.pts)?b:a);
+  const val=all.reduce((a,b)=>b.o.cpp>a.o.cpp?b:a);
+  const tile=(k,label,v,x)=>'<button type="button" class="sum" data-sort="'+k+'" data-id="'+esc(x.it.id)+'" data-p="'+x.o.p+'" aria-pressed="'+(S.sort===k)+'"><span class="lbl">'+label+'</span><span class="v">'+v+'</span><span class="s">'+esc(PG[x.o.p].s)+' · '+(k==='fees'?fmtK(x.o.pts)+' pts':money(x.o.fees))+'</span></button>';
+  el.innerHTML=tile('points','Fewest points',fmtK(few.o.pts),few)+tile('fees','Lowest fees',money(cheap.o.fees),cheap)+tile('value','Best value',val.o.cpp.toFixed(1)+'¢/pt',val);
+}
+
+function segCabin(s){const k=effCab(s,S.cab);return k===S.cab?CABINS[k]:CABINS[k]+' (no '+CABINS[S.cab].toLowerCase()+' on this flight)';}
+
+function itinHTML(r){
+  const it=r.it,b=r.best,open=S.open===it.id,P=PG[b.p];
+  const stops=it.stops===0?'Nonstop':it.stops+' stop'+(it.stops>1?'s':'')+' · '+it.via.join(', ');
+  const dots=it.segs.slice(1).map((s,i)=>{const mid=(it.segs[i].arrU+s.depU)/2;return '<i class="dot" style="left:'+((mid-it.depU)/it.dur*100).toFixed(1)+'%"></i>';}).join('');
+  const als=[...new Set(it.segs.map(s=>AL[s.al].n))].join(' + ');
+  const fns=it.segs.map(s=>s.al+' '+s.fn).join(', ');
+  const prod=S.cab===2&&it.longest.prod?' · '+it.longest.prod:'';
+  const more=r.vis.length-1;
+  const bid='b-'+it.id;
+  return '<li class="itin'+(open?' open':'')+'" data-id="'+esc(it.id)+'">'+
+    '<button class="ihead" type="button" aria-expanded="'+open+'" aria-controls="'+esc(bid)+'">'+
+      '<span class="sched">'+
+        '<span class="end"><span class="tm">'+clock(it.depL)+'</span><span class="cd">'+it.o+'</span></span>'+
+        '<span class="path"><span class="du">'+dur(it.dur)+'</span><span class="ln">'+dots+'</span><span class="st'+(it.stops?'':' ns')+'">'+stops+'</span></span>'+
+        '<span class="end end-r"><span class="tm">'+clock(it.arrL)+off(it.dayOff)+'</span><span class="cd">'+it.d+'</span></span>'+
+      '</span>'+
+      '<span class="best"><span class="bp">'+fmt(b.pts)+'<small> pts</small></span><span class="bf">+ '+money(b.fees)+'</span><span class="bv">'+badge(b.p)+esc(P.s)+'</span></span>'+
+      '<span class="meta2">'+esc(als)+' · '+esc(fns)+esc(prod)+'</span>'+
+      '<span class="tags">'+levelChip(b)+coverChip(b)+(b.mixed?'<span class="chip">Mixed cabin</span>':'')+
+        '<span class="more">'+(open?'Hide':more?more+' more way'+(more>1?'s':'')+' to book':'Details')+'</span></span>'+
+    '</button>'+(open?bodyHTML(r):'')+'</li>';
+}
+
+function bodyHTML(r){
+  const it=r.it,sel=S.plan[it.id];
+  const segs=it.segs.map((s,i)=>(i?'<div class="lay">'+dur(s.lay)+' connection in '+esc(AP[s.from].city)+' ('+s.from+')</div>':'')+
+    '<div class="sg"><span class="sg-f">'+esc(AL[s.al].n)+' '+s.al+' '+s.fn+'</span>'+
+    '<span class="sg-t">'+clock(s.depL)+off(s.depOff)+' '+s.from+' → '+clock(s.arrL)+off(s.arrOff)+' '+s.to+'</span>'+
+    '<span class="sg-m">'+dur(s.dur)+' · '+s.ac+' · '+segCabin(s)+'</span></div>').join('');
+  return '<div class="ibody" id="'+esc('b-'+it.id)+'"><div class="segs">'+segs+'</div>'+
+    '<div class="opts"><div class="opts-h"><span class="lbl">Ways to book</span><span class="lbl">Per traveler</span></div>'+
+    r.vis.map(o=>optHTML(r,o,sel===o.p)).join('')+'</div></div>';
+}
+
+function optHTML(r,o,sel){
+  const P=PG[o.p];
+  const banks=Object.keys(XFER).filter(b=>XFER[b][o.p]);
+  const fund=banks.map(b=>'<span class="chip fund'+((W.banks[b]||0)>=1000?' has':'')+'" title="'+esc(BANKS[b].n+' to '+P.s+', '+xtime(b,o.p))+'">'+BANKS[b].short+' '+ratio(XFER[b][o.p])+'</span>').join('')||'<span class="chip">No card transfers</span>';
+  const seatTxt=o.saver?' · '+o.seats+' seat'+(o.seats>1?'s':'')+' left':'';
+  return '<div class="opt'+(sel?' sel':'')+'">'+badge(o.p)+
+    '<span class="on"><b>'+esc(P.n)+'</b><small>'+o.level+seatTxt+(o.mixed?' · mixed cabin':'')+'</small></span>'+
+    '<span class="nums"><span class="n"><b>'+fmt(o.pts)+'</b><small>points</small></span><span class="n"><b>'+money(o.fees)+'</b><small>fees</small></span><span class="n"><b>'+o.cpp.toFixed(1)+'¢</b><small>per point</small></span></span>'+
+    '<span class="ofund">'+fund+coverChip(o)+'</span>'+
+    '<button class="og" type="button" data-p="'+o.p+'" aria-expanded="'+sel+'">'+(sel?'Hide steps':'How to book')+'</button>'+
+  '</div>'+(sel?planHTML(r,o):'');
+}
+
+function planHTML(r,o){
+  const it=r.it,P=PG[o.p],need=o.pts*S.pax,pl=plan(o.p,need);
+  const flights=it.segs.map(s=>s.al+' '+s.fn).join(' + ');
+  const banks=Object.keys(XFER).filter(b=>XFER[b][o.p]);
+  let pts;
+  const xs=pl.steps.filter(s=>s.kind==='xfer');
+  if(pl.steps.length){
+    pts='<ul class="xfers">'+pl.steps.map(st=>st.kind==='own'
+      ?'<li>Use <b>'+fmt(st.amt)+'</b> miles already in your '+esc(P.s)+' account.</li>'
+      :'<li>Move <b>'+fmt(st.amt)+'</b> '+esc(BANKS[st.bank].n)+' to get <b>'+fmt(st.got)+'</b> '+esc(P.s)+' miles<span class="r">'+ratio(st.r)+' · '+xtime(st.bank,o.p)+'</span></li>').join('')+'</ul>'+
+      (pl.short?'<p>You would still be <b>'+fmt(pl.short)+'</b> miles short. Add balances in My points or pick another program.</p>':'');
+  }else if(!banks.length){
+    pts='<p>'+esc(P.s)+' miles don’t transfer from the card programs tracked here. You’d need to earn them by flying or with that airline’s own card.</p>';
+  }else{
+    pts='<p>None of your balances reach '+esc(P.s)+' yet. These card programs transfer here: '+banks.map(b=>esc(BANKS[b].n)+' ('+ratio(XFER[b][o.p])+')').join(', ')+'.</p>';
+  }
+  const notes=[P.note];
+  if(it.segs.some(s=>(s.al==='LH'||s.al==='LX')&&effCab(s,S.cab)===3))notes.push('Lufthansa Group opens First seats to partner programs about two weeks before departure.');
+  if(o.level==='Standard')notes.push('No saver seats on this date, so this is the higher standard price. Nearby dates may be cheaper.');
+  if(o.mixed)notes.push('Part of this trip is in a lower cabin, but you pay the full '+CABINS[S.cab].toLowerCase()+' price.');
+  return '<div class="plan"><ol class="steps">'+
+    '<li><h4>Check the seat is there</h4><p>On '+esc(P.host)+', search '+it.o+' to '+it.d+' on '+longDate(S.date)+' in '+CABINS[S.cab].toLowerCase()+'. Look for '+flights+(o.allOwn?'':', listed as a partner award')+'.</p></li>'+
+    '<li><h4>'+(xs.length?'Move your points':'Line up the miles')+'</h4>'+pts+'</li>'+
+    '<li><h4>Book it</h4><p>Pay <b>'+fmt(need)+'</b> '+esc(P.s)+(P.rev?' points':' miles')+' plus <b>'+money(o.fees*S.pax)+'</b> in taxes and fees'+(S.pax>1?' for '+S.pax+' travelers':'')+'.</p></li>'+
+  '</ol>'+notes.map(n=>'<p class="pnote">'+esc(n)+'</p>').join('')+
+  (xs.length?'<p class="caution">Transfers can’t be undone. Confirm the seat is still bookable before you move points.</p>':'')+
+  '<a class="ext" href="'+esc(P.url)+'" target="_blank" rel="noopener noreferrer">Open '+esc(P.host)+'</a></div>';
+}
+
+function emptyHTML(title,body,action){return '<li class="empty"><b>'+title+'</b><span>'+body+'</span>'+(action||'')+'</li>';}
+
+function renderResults(){
+  const list=$('#list');
+  const res=CUR;
+  if(res.error){
+    $('#summary').hidden=true;$('#count').innerHTML='';
+    list.innerHTML=res.error==='far'
+      ?emptyHTML('Too far out','Airlines usually open award seats about 330 days before departure. Pick an earlier date.')
+      :emptyHTML('That date has passed','Pick today or a later date.');
+    return;
+  }
+  if(!res.rows.length){
+    $('#summary').hidden=true;$('#count').innerHTML='';
+    list.innerHTML=emptyHTML('No routes found','This demo network has no flights between these airports. Try a nearby major airport.');
+    return;
+  }
+  const rows=visibleRows(res).sort(SORTS[S.sort]);
+  renderSummary(rows);
+  const nOpts=rows.reduce((a,r)=>a+r.vis.length,0);
+  const noSpace=res.rows.filter(r=>!r.opts.length).length;
+  $('#count').innerHTML=rows.length+' flight'+(rows.length===1?'':'s')+' <span>· '+nOpts+' ways to book'+(noSpace?' · '+noSpace+' with no award seats':'')+'</span>';
+  const nf=filterCount();
+  $('#ftoggle').innerHTML='Filters'+(nf?' <b>'+nf+'</b>':'');
+  if(!rows.length){
+    const anyOpts=res.rows.some(r=>r.opts.length);
+    list.innerHTML=anyOpts
+      ?emptyHTML('No flights match these filters','Loosen a filter to see more options.','<button type="button" data-reset>Reset filters</button>')
+      :emptyHTML('No award seats in '+CABINS[S.cab].toLowerCase(),'Try a nearby date above or another cabin.');
+    return;
+  }
+  list.innerHTML=rows.map(itinHTML).join('');
+}
+
+function filterCount(){return (S.stops<9?1:0)+(S.mine?1:0)+(S.maxFee<Infinity?1:0)+S.xP.size+S.xA.size;}
+
+function renderFilterChips(){
+  const progs=new Set(),als=new Set();
+  for(const r of CUR.rows){for(const o of r.opts)progs.add(o.p);for(const s of r.it.segs)als.add(s.al);}
+  S.xP.forEach(p=>progs.add(p));S.xA.forEach(a=>als.add(a));
+  $('#fProgs').innerHTML=[...progs].sort((a,b)=>PG[a].s.localeCompare(PG[b].s)).map(p=>'<button type="button" class="fchip" data-fp="'+p+'" aria-pressed="'+!S.xP.has(p)+'">'+badge(p)+esc(PG[p].s)+'</button>').join('')||'<span class="small">None for this search</span>';
+  $('#fAls').innerHTML=[...als].sort((a,b)=>AL[a].n.localeCompare(AL[b].n)).map(a=>'<button type="button" class="fchip al" data-fa="'+a+'" aria-pressed="'+!S.xA.has(a)+'">'+esc(AL[a].n)+'</button>').join('');
+}
+
+function renderTotals(){
+  $('#walletTotal').textContent=fmtK(bankTotal());
+  $('#wSum').textContent=fmt(bankTotal());
+  $('#wNote').hidden=!W.example;
+}
+
+function renderPartners(){
+  const groups=[['star','Star Alliance'],['oneworld','oneworld'],['skyteam','SkyTeam'],['none','Independent']];
+  const bk=Object.keys(BANKS);
+  let h='<thead><tr><th scope="col">Airline program</th>'+bk.map(b=>'<th scope="col">'+esc(BANKS[b].s)+'</th>').join('')+'<th scope="col">Most you could have</th></tr></thead><tbody>';
+  for(const [g,label] of groups){
+    const ps=Object.keys(PG).filter(p=>PG[p].al===g).sort((a,b)=>PG[a].n.localeCompare(PG[b].n));
+    if(!ps.length)continue;
+    h+='<tr class="grp"><th colspan="'+(bk.length+2)+'" scope="colgroup">'+label+'</th></tr>';
+    for(const p of ps){
+      h+='<tr><th scope="row">'+badge(p)+esc(PG[p].n)+'</th>'+bk.map(b=>{const r=XFER[b][p];return r?'<td class="r">'+ratio(r)+(xtime(b,p)!=='usually instant'?'<small>'+xtime(b,p)+'</small>':'')+'</td>':'<td class="none">—</td>';}).join('')+'<td class="reach">'+fmt(reach(p))+'</td></tr>';
+    }
+  }
+  $('#ptable').innerHTML=h+'</tbody>';
+}
+
+function renderAll(){renderRoute();renderDates();renderResults();renderFilterChips();renderTotals();}
+function run(){CUR=search(S.o,S.d,S.date,S.cab,TODAY);renderAll();}
+
+/* ---------- airport combobox ---------- */
+function matchAirports(q){
+  q=q.trim().toLowerCase();
+  if(!q||/^[a-z]{3} · /.test(q))return POPULAR.map(c=>AP[c]);
+  const scored=[];
+  for(const a of AP_LIST){
+    const code=a.code.toLowerCase(),city=a.city.toLowerCase(),name=a.name.toLowerCase();
+    let s=-1;
+    if(code===q)s=0;else if(code.startsWith(q))s=1;else if(city.startsWith(q))s=2;else if(city.includes(q)||name.toLowerCase().includes(q))s=3;
+    if(s>=0)scored.push([s,a]);
+  }
+  return scored.sort((x,y)=>x[0]-y[0]||x[1].city.localeCompare(y[1].city)).slice(0,8).map(x=>x[1]);
+}
+function setupAC(inputId,key){
+  const inp=$('#'+inputId),lb=$('#'+inputId+'-list');let items=[],act=-1;
+  const label=c=>c+' · '+AP[c].city;
+  function paint(){
+    lb.innerHTML=items.map((a,i)=>'<li role="option" id="'+inputId+'-o'+i+'" data-code="'+a.code+'" aria-selected="'+(i===act)+'"><b>'+a.code+'</b><span>'+esc(a.city)+' <small>'+esc(a.name)+'</small></span></li>').join('');
+    if(act>=0)inp.setAttribute('aria-activedescendant',inputId+'-o'+act);else inp.removeAttribute('aria-activedescendant');
+  }
+  function open(q){items=matchAirports(q);act=items.length?0:-1;paint();lb.hidden=!items.length;inp.setAttribute('aria-expanded',String(!!items.length));}
+  function close(){lb.hidden=true;inp.setAttribute('aria-expanded','false');inp.removeAttribute('aria-activedescendant');}
+  function pick(c){const changed=S[key]!==c;S[key]=c;inp.value=label(c);close();if(changed&&S.o!==S.d){S.open=null;hideErr();run();}}
+  inp.value=label(S[key]);
+  inp.addEventListener('focus',()=>{inp.select();open('');});
+  inp.addEventListener('input',()=>open(inp.value));
+  inp.addEventListener('keydown',e=>{
+    if(lb.hidden&&(e.key==='ArrowDown')){open(inp.value);e.preventDefault();return;}
+    if(lb.hidden)return;
+    if(e.key==='ArrowDown'){act=Math.min(items.length-1,act+1);paint();e.preventDefault();}
+    else if(e.key==='ArrowUp'){act=Math.max(0,act-1);paint();e.preventDefault();}
+    else if(e.key==='Enter'){if(act>=0){e.preventDefault();pick(items[act].code);}}
+    else if(e.key==='Escape'){close();inp.value=label(S[key]);}
+  });
+  lb.addEventListener('mousedown',e=>{const li=e.target.closest('li');if(li){e.preventDefault();pick(li.dataset.code);}});
+  inp.addEventListener('blur',()=>{setTimeout(()=>{
+    const typed=inp.value.trim();
+    if(!lb.hidden&&act>=0&&typed&&typed!==label(S[key]))pick(items[act].code);else{inp.value=label(S[key]);close();}
+  },150);});
+  return {sync:()=>{inp.value=label(S[key]);}};
+}
+
+/* ---------- views ---------- */
+function route(){
+  const v=location.hash==='#partners'?'partners':'search';
+  $('#view-search').hidden=v!=='search';
+  $('#view-partners').hidden=v!=='partners';
+  $$('.tab').forEach(t=>{if(t.dataset.view===v)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current');});
+  if(v==='partners'){renderPartners();window.scrollTo(0,0);}
+}
+
+/* ---------- filter sheet (phones) ---------- */
+function setFilters(open){
+  $('#filters').classList.toggle('open',open);
+  $('#fbackdrop').hidden=!open;
+  $('#ftoggle').setAttribute('aria-expanded',String(open));
+}
+
+/* ---------- wallet sheet ---------- */
+let lastFocus=null;
+function walletRow(kind,key,label,val){
+  const id='w-'+kind+'-'+key;
+  return '<label class="wrow" for="'+id+'"><span>'+esc(label)+'</span><input id="'+id+'" class="input win" inputmode="numeric" autocomplete="off" data-kind="'+kind+'" data-key="'+key+'" value="'+(val?fmt(val):'')+'" placeholder="0"></label>';
+}
+function renderWallet(){
+  $('#wBanks').innerHTML=Object.keys(BANKS).map(b=>walletRow('b',b,BANKS[b].n,W.banks[b])).join('');
+  $('#wMiles').innerHTML=Object.keys(PG).sort((a,b)=>PG[a].n.localeCompare(PG[b].n)).map(p=>walletRow('m',p,PG[p].n,W.miles[p])).join('');
+  renderTotals();
+}
+function openWallet(){
+  lastFocus=document.activeElement;renderWallet();$('#wallet').hidden=false;
+  const f=$('#wallet .x');if(f)f.focus({preventScroll:true});
+}
+function closeWallet(){
+  $('#wallet').hidden=true;renderAll();if(!$('#view-partners').hidden)renderPartners();
+  if(lastFocus&&lastFocus.focus)lastFocus.focus({preventScroll:true});
+}
+
+/* ---------- wiring ---------- */
+const err=$('#ferr');
+function hideErr(){err.hidden=true;}
+function showErr(t){err.textContent=t;err.hidden=false;}
+
+function init(){
+  const acF=setupAC('from','o'),acT=setupAC('to','d');
+  const dateIn=$('#date');dateIn.value=S.date;dateIn.min=TODAY;dateIn.max=addDays(TODAY,355);
+  $('#cab'+S.cab).checked=true;
+
+  $('#sform').addEventListener('submit',e=>{
+    e.preventDefault();
+    if(S.o===S.d){showErr('Pick two different airports.');return;}
+    hideErr();S.open=null;run();
+    if(window.innerWidth<960)$('#results').scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'});
+  });
+  $('#swap').addEventListener('click',()=>{const t=S.o;S.o=S.d;S.d=t;acF.sync();acT.sync();S.open=null;run();});
+  dateIn.addEventListener('change',()=>{
+    if(!dateIn.value)return;
+    if(daysBetween(TODAY,dateIn.value)<0){showErr('Pick today or a later date.');dateIn.value=S.date;return;}
+    hideErr();S.date=dateIn.value;S.open=null;run();
+  });
+  $('#pax').addEventListener('change',e=>{S.pax=+e.target.value;renderAll();});
+  $('#cabins').addEventListener('change',e=>{if(e.target.name==='cab'){S.cab=+e.target.value;S.open=null;run();}});
+  $('#sort').addEventListener('change',e=>{S.sort=e.target.value;renderResults();});
+
+  $('#dates').addEventListener('click',e=>{
+    const b=e.target.closest('.day');if(!b)return;
+    S.date=b.dataset.date;dateIn.value=S.date;S.open=null;run();
+    const nb=$('#dates [aria-pressed="true"]');if(nb)nb.focus({preventScroll:true});
+  });
+  $('#summary').addEventListener('click',e=>{
+    const b=e.target.closest('.sum');if(!b)return;
+    S.sort=b.dataset.sort;$('#sort').value=S.sort;S.open=b.dataset.id;S.plan[b.dataset.id]=b.dataset.p;
+    renderResults();
+    const li=$('#list [data-id="'+b.dataset.id+'"]');
+    if(li)li.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'nearest'});
+  });
+  $('#list').addEventListener('click',e=>{
+    if(e.target.closest('[data-reset]')){resetFilters();return;}
+    const li=e.target.closest('.itin');if(!li)return;
+    const id=li.dataset.id;
+    const og=e.target.closest('.og');
+    if(og){S.plan[id]=S.plan[id]===og.dataset.p?null:og.dataset.p;renderResults();const b=$('#list [data-id="'+id+'"] .og[data-p="'+og.dataset.p+'"]');if(b)b.focus({preventScroll:true});return;}
+    if(e.target.closest('.ihead')){
+      S.open=S.open===id?null:id;
+      if(S.open&&!S.plan[id]){const r=visibleRows(CUR).find(x=>x.it.id===id);if(r)S.plan[id]=r.best.p;}
+      renderResults();
+      const h=$('#list [data-id="'+id+'"] .ihead');if(h)h.focus({preventScroll:true});
+    }
+  });
+  document.addEventListener('click',e=>{if(e.target.closest('[data-open-wallet]'))openWallet();});
+
+  // filters
+  $('#filters').addEventListener('change',e=>{
+    const t=e.target;
+    if(t.name==='stops')S.stops=+t.value;
+    else if(t.id==='fmine')S.mine=t.checked;
+    else if(t.id==='ffee')S.maxFee=t.value==='Infinity'?Infinity:+t.value;
+    else return;
+    renderDates();renderResults();
+  });
+  $('#filters').addEventListener('click',e=>{
+    const fp=e.target.closest('[data-fp]'),fa=e.target.closest('[data-fa]');
+    if(fp){const p=fp.dataset.fp;S.xP.has(p)?S.xP.delete(p):S.xP.add(p);}
+    else if(fa){const a=fa.dataset.fa;S.xA.has(a)?S.xA.delete(a):S.xA.add(a);}
+    else return;
+    renderDates();renderResults();renderFilterChips();
+  });
+  function resetFilters(){
+    S.stops=9;S.mine=false;S.maxFee=Infinity;S.xP.clear();S.xA.clear();
+    $('#st9').checked=true;$('#fmine').checked=false;$('#ffee').value='Infinity';
+    renderDates();renderResults();renderFilterChips();
+  }
+  $('#freset').addEventListener('click',resetFilters);
+  $('#ftoggle').addEventListener('click',()=>setFilters(!$('#filters').classList.contains('open')));
+  $('#fdone').addEventListener('click',()=>setFilters(false));
+  $('#fbackdrop').addEventListener('click',()=>setFilters(false));
+
+  // wallet
+  $('#walletBtn').addEventListener('click',openWallet);
+  $('#wallet').addEventListener('click',e=>{if(e.target.closest('[data-close]'))closeWallet();});
+  $('#wallet').addEventListener('input',e=>{
+    const t=e.target;if(!t.classList.contains('win'))return;
+    const v=parseInt(t.value.replace(/[^\d]/g,''),10)||0;
+    (t.dataset.kind==='b'?W.banks:W.miles)[t.dataset.key]=v;
+    W.example=false;saveWallet();renderTotals();
+  });
+  $('#wallet').addEventListener('focusout',e=>{const t=e.target;if(t.classList&&t.classList.contains('win')){const v=parseInt(t.value.replace(/[^\d]/g,''),10)||0;t.value=v?fmt(v):'';}});
+  $('#wClear').addEventListener('click',()=>{
+    for(const b in BANKS)W.banks[b]=0;W.miles={};W.example=false;saveWallet();renderWallet();
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Escape')return;
+    if(!$('#wallet').hidden)closeWallet();
+    else if($('#filters').classList.contains('open'))setFilters(false);
+  });
+
+  window.addEventListener('hashchange',route);
+  route();
+  run();
+  // open the top result on first load so the booking steps are visible
+  const top=visibleRows(CUR).sort(SORTS[S.sort])[0];
+  if(top){S.open=top.it.id;S.plan[top.it.id]=top.best.p;renderResults();}
+}
+init();
+})();
+</script>
